@@ -603,7 +603,21 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
     <div style="margin-top:10px">A checkbox here means <b>step 3 done cold</b> — not “read and understood.”</div>
   </div>
 
+  <div class="topic-block" id="trig-block">
+    <button class="topic-head" id="trig-head" aria-expanded="false">
+      <span class="topic-title">Pattern triggers — statement wording → what to reach for</span>
+      <span class="topic-count">22 patterns</span>
+      <span class="chev">▼</span>
+    </button>
+    <div class="topic-body" id="trig-body"></div>
+  </div>
+
   <div class="toolbar">
+    <select id="f-group" aria-label="Group problems by">
+      <option value="pattern">Group: Pattern</option>
+      <option value="topic">Group: Topic</option>
+      <option value="mixed">Mixed — pattern hidden</option>
+    </select>
     <select id="f-topic" aria-label="Filter by topic"><option value="all">All topics</option></select>
     <select id="f-diff" aria-label="Filter by difficulty"><option value="all">All difficulty</option><option value="E">Easy</option><option value="M">Medium</option></select>
     <select id="f-status" aria-label="Filter by status"><option value="all">All</option><option value="unsolved">Unsolved</option><option value="solved">Solved</option></select>
@@ -753,7 +767,7 @@ const TRACKS = [
 /* ---------- state ---------- */
 const KEY='praveen-prep-v1';
 const UIKEY='praveen-prep-ui-v1';
-let state={tasks:{},probs:{},log:{}};
+let state={tasks:{},probs:{},log:{},guess:{}};
 try{const s=localStorage.getItem(KEY); if(s) state=Object.assign(state,JSON.parse(s));}catch(e){}
 let ui={theme:'dark',view:'tracks',openTracks:['dsa-concepts'],openTopics:null};
 try{const s=localStorage.getItem(UIKEY); if(s) ui=Object.assign(ui,JSON.parse(s));}catch(e){}
@@ -921,41 +935,136 @@ function toggleTask(id){
 
 /* ---------- dsa ---------- */
 const TOPICS=[...new Set(PROBLEMS.map(p=>p.t))];
+
+/* raw labels consolidated into real solving patterns */
+const PAT_MAP={
+ 'Hashing':'Hashing / Frequency Map',
+ 'Array Basics':'Array Scan & Simulation',
+ 'Prefix Sum':'Prefix Sum',
+ 'Two Pointers':'Two Pointers',
+ 'Fast & Slow Pointers':'Fast & Slow Pointers',
+ 'Sliding Window':'Sliding Window',
+ 'String Basics':'String Manipulation',
+ 'Sorting':'Sort First, Then Scan',
+ 'Merge Intervals':'Merge Intervals',
+ 'Binary Search':'Binary Search',
+ 'Stack':'Stack / Queue','Queue':'Stack / Queue',
+ 'Monotonic Stack':'Monotonic Stack',
+ 'Linked List':'Linked List Pointer Surgery',
+ 'Tree DFS':'Tree DFS (bubble-up)','Tree':'Tree DFS (bubble-up)','Traversal':'Tree DFS (bubble-up)',
+ 'Tree BFS':'Tree BFS (level order)',
+ 'Heap':'Heap / Top-K','Top K Elements':'Heap / Top-K','K-way Merge':'Heap / Top-K',
+ 'Backtracking':'Backtracking','Subsets Pattern':'Backtracking','Recursion':'Backtracking',
+ 'Graph DFS/BFS':'Graph DFS / BFS',
+ 'Topological Sort':'Topological Sort',
+ 'Matrix':'Matrix Traversal',
+ 'Greedy':'Greedy Exchange',
+ '1D DP':'Dynamic Programming','2D DP':'Dynamic Programming'
+};
+/* learning order: dependency, not topic */
+const PATTERNS=['Hashing / Frequency Map','Array Scan & Simulation','Prefix Sum','Two Pointers',
+ 'Fast & Slow Pointers','Sliding Window','String Manipulation','Sort First, Then Scan',
+ 'Merge Intervals','Binary Search','Stack / Queue','Monotonic Stack','Linked List Pointer Surgery',
+ 'Tree DFS (bubble-up)','Tree BFS (level order)','Heap / Top-K','Backtracking','Graph DFS / BFS',
+ 'Topological Sort','Matrix Traversal','Greedy Exchange','Dynamic Programming'];
+
+const TRIGGERS={
+ 'Hashing / Frequency Map':'“seen before”, “count occurrences”, “anagram”, “pair summing to X” on unsorted input',
+ 'Array Scan & Simulation':'follow the rules literally, one pass, O(1) extra space — no cleverness available',
+ 'Prefix Sum':'repeated range-sum queries, “subarray sums to K”, running totals',
+ 'Two Pointers':'input is SORTED and you need a pair/triplet, or converge from both ends (palindrome, container)',
+ 'Fast & Slow Pointers':'linked list: cycle, middle, kth-from-end — anything needing a second offset pointer',
+ 'Sliding Window':'CONTIGUOUS subarray/substring + longest/shortest/at-most-K — the window word is “contiguous”',
+ 'String Manipulation':'parsing, building, in-place char work; no other pattern fires',
+ 'Sort First, Then Scan':'“group similar”, “closest pair”, order doesn’t matter and sorting unlocks a linear pass',
+ 'Merge Intervals':'any input of [start, end] ranges — overlap, insert, minimum rooms',
+ 'Binary Search':'sorted + O(log n), OR “minimise the maximum / maximise the minimum” (search on the answer)',
+ 'Stack / Queue':'matching pairs, undo/nesting, LIFO order; queue for FIFO and BFS scaffolding',
+ 'Monotonic Stack':'“next greater”, “previous smaller”, “span”, largest rectangle — the giveaway phrase is next/previous X',
+ 'Linked List Pointer Surgery':'reverse, reorder, merge, remove — draw the pointers before typing, always use a dummy head',
+ 'Tree DFS (bubble-up)':'answer for a node depends on answers from children (height, diameter, subtree sums, validity)',
+ 'Tree BFS (level order)':'anything mentioning level, depth-by-depth, right-side view, or shortest in an unweighted graph',
+ 'Heap / Top-K':'“top K”, “K closest”, “Kth largest”, running median, merging K sorted things',
+ 'Backtracking':'“all combinations / permutations / subsets”, N-Queens, word search — exponential output is expected',
+ 'Graph DFS / BFS':'grids or nodes+edges: islands, connected components, reachability, shortest unweighted path',
+ 'Topological Sort':'dependencies, prerequisites, build/course order, cycle detection in a directed graph',
+ 'Matrix Traversal':'spiral, rotate, set-zeroes, in-place grid transforms with index bookkeeping',
+ 'Greedy Exchange':'“minimum number of X”, pick locally-best and prove it’s safe — usually needs a sort first',
+ 'Dynamic Programming':'“count the ways”, “max/min value with choices”, overlapping subproblems — write the recurrence first'
+};
+
+PROBLEMS.forEach(p=>{ p.pg = PAT_MAP[p.p] || p.p; });
+
+function groupMode(){ return ($('f-group')||{value:'pattern'}).value; }
 function buildDSAFilters(){
   const sel=$('f-topic');
   TOPICS.forEach(t=>{const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o);});
+  $('trig-body').innerHTML = PATTERNS.map(p=>{
+    const n=PROBLEMS.filter(x=>x.pg===p).length;
+    return '<div class="prob" style="grid-template-columns:1fr;padding:9px 14px">'
+      +'<div><b style="font-size:12px">'+esc(p)+'</b> <span class="topic-count">· '+n+'</span>'
+      +'<div style="font-size:11px;color:var(--dim);margin-top:2px">'+esc(TRIGGERS[p]||'')+'</div></div></div>';
+  }).join('');
+  $('trig-head').addEventListener('click',()=>{
+    const b=$('trig-block'); b.classList.toggle('open');
+    $('trig-head').setAttribute('aria-expanded', b.classList.contains('open'));
+  });
 }
 function filtersActive(){
   return $('f-topic').value!=='all'||$('f-diff').value!=='all'||$('f-status').value!=='all'||!!query;
 }
+/* stable shuffle so mixed order doesn't jump on every re-render */
+function seededOrder(arr){
+  return arr.map(p=>({p,k:((p.id*2654435761)%4294967296)})).sort((a,b)=>a.k-b.k).map(x=>x.p);
+}
+function probRow(p,hidePattern){
+  const d=!!state.probs[p.id], g=state.guess&&state.guess[p.id];
+  const patCell = hidePattern
+    ? (g ? '<span class="pat" style="color:'+(g==='hit'?'var(--dsa)':'var(--behind)')+'">'+(g==='hit'?'✓ called it':'✗ missed')+' · '+esc(p.pg)+'</span>'
+         : '<button class="small-btn" data-reveal="'+p.id+'" style="padding:2px 9px;font-size:10px">Reveal</button>')
+    : '<span class="pat">'+hl(p.pg)+'</span>';
+  return '<div class="prob'+(d?' done':'')+'" data-prow="'+p.id+'">'
+    +'<input class="chk chk-dsa" type="checkbox" data-prob="'+p.id+'"'+(d?' checked':'')+' aria-label="'+esc(p.n)+'">'
+    +'<a href="'+p.u+'" target="_blank" rel="noopener">'+hl(p.n)+'</a>'
+    +patCell
+    +'<span class="diff '+p.d+'">'+(p.d==='E'?'Easy':'Medium')+'</span></div>';
+}
 function renderDSA(){
-  const ft=$('f-topic').value, fd=$('f-diff').value, fs=$('f-status').value;
+  const ft=$('f-topic').value, fd=$('f-diff').value, fs=$('f-status').value, gm=groupMode();
   $('clear-filters').classList.toggle('hidden',!filtersActive());
-  let html='';
-  for(const t of TOPICS){
-    if(ft!=='all'&&ft!==t) continue;
-    const topicHit=matches(t.toLowerCase());
-    const ps=PROBLEMS.filter(p=>p.t===t
+  const pass=p=> (ft==='all'||p.t===ft)
       && (fd==='all'||p.d===fd)
       && (fs==='all'||(fs==='solved')===!!state.probs[p.id])
-      && (!query||topicHit||matches(p.n.toLowerCase())||matches(p.p.toLowerCase())));
+      && (!query||matches(p.n.toLowerCase())||matches(p.pg.toLowerCase())||matches(p.t.toLowerCase()));
+  let html='';
+
+  if(gm==='mixed'){
+    const ps=seededOrder(PROBLEMS.filter(pass));
+    const g=state.guess||{}, tried=Object.keys(g).length, hits=Object.values(g).filter(v=>v==='hit').length;
+    html='<div class="method" style="margin-bottom:14px"><span class="kicker">Mixed mode · identification training</span>'
+      +'<div style="margin-top:6px">Pattern is hidden. Read the problem, decide which pattern applies and why, <b>then</b> hit Reveal and record whether you called it.</div>'
+      +(tried?'<div style="margin-top:8px">Identification accuracy: <b>'+Math.round(hits/tried*100)+'%</b> over '+tried+' calls — this is the number that predicts interview performance, not problems solved.</div>':'')
+      +'</div>';
+    html+='<div class="topic-block open"><div class="topic-body">'+ps.map(p=>probRow(p,true)).join('')+'</div></div>';
+    $('dsa-list').innerHTML = ps.length?html:'<div class="empty">Nothing matches these filters.</div>';
+    renderChips(); return;
+  }
+
+  const keys = gm==='pattern' ? PATTERNS : TOPICS;
+  const field = gm==='pattern' ? 'pg' : 't';
+  for(const k of keys){
+    const ps=PROBLEMS.filter(p=>p[field]===k && pass(p));
     if(!ps.length) continue;
-    const all=PROBLEMS.filter(p=>p.t===t), done=all.filter(p=>state.probs[p.id]).length;
-    const open = (query||fs!=='all'||ft!=='all') ? true : ui.openTopics.includes(t);
+    const all=PROBLEMS.filter(p=>p[field]===k), done=all.filter(p=>state.probs[p.id]).length;
+    const open = (query||fs!=='all'||ft!=='all') ? true : ui.openTopics.includes(k);
     html+='<div class="topic-block'+(open?' open':'')+'">'
-      +'<button class="topic-head" data-topic="'+esc(t)+'" aria-expanded="'+open+'">'
-      +'<span class="topic-title">'+hl(t)+'</span>'
+      +'<button class="topic-head" data-topic="'+esc(k)+'" aria-expanded="'+open+'">'
+      +'<span class="topic-title">'+hl(k)+'</span>'
       +'<span class="topic-meter"><i style="width:'+Math.round(done/all.length*100)+'%"></i></span>'
       +'<span class="topic-count">'+done+' / '+all.length+'</span>'
       +'<span class="chev">▼</span></button><div class="topic-body">'
-      +ps.map(p=>{
-        const d=!!state.probs[p.id];
-        return '<div class="prob'+(d?' done':'')+'" data-prow="'+p.id+'">'
-          +'<input class="chk chk-dsa" type="checkbox" data-prob="'+p.id+'"'+(d?' checked':'')+' aria-label="'+esc(p.n)+'">'
-          +'<a href="'+p.u+'" target="_blank" rel="noopener">'+hl(p.n)+'</a>'
-          +'<span class="pat">'+hl(p.p)+'</span>'
-          +'<span class="diff '+p.d+'">'+(p.d==='E'?'Easy':'Medium')+'</span></div>';
-      }).join('')
+      +(gm==='pattern'&&TRIGGERS[k]?'<div style="font-size:11px;color:var(--dim);padding:8px 14px 4px">Fires when: '+esc(TRIGGERS[k])+'</div>':'')
+      +ps.map(p=>probRow(p,false)).join('')
       +'</div></div>';
   }
   $('dsa-list').innerHTML = html || '<div class="empty">Nothing matches these filters.</div>';
@@ -1056,6 +1165,14 @@ document.addEventListener('click',e=>{
     saveUI(); return;
   }
 
+  const rv=e.target.closest('[data-reveal]');
+  if(rv){
+    const id=rv.dataset.reveal, p=PROBLEMS.find(x=>x.id==id);
+    const hit=confirm('Pattern: '+p.pg+'\n\nDid you call it correctly before revealing?\n\nOK = yes   ·   Cancel = no');
+    state.guess=state.guess||{}; state.guess[id]=hit?'hit':'miss';
+    save(); renderDSA(); return;
+  }
+
   const tp=e.target.closest('[data-topic]');
   if(tp){
     const id=tp.dataset.topic, open=tp.parentElement.classList.toggle('open');
@@ -1076,7 +1193,7 @@ document.addEventListener('change',e=>{
   else if(e.target.matches('[data-prob]')) toggleProb(+e.target.dataset.prob);
 });
 
-['f-topic','f-diff','f-status'].forEach(id=>$(id).addEventListener('change',renderDSA));
+['f-group','f-topic','f-diff','f-status'].forEach(id=>$(id).addEventListener('change',renderDSA));
 $('clear-filters').addEventListener('click',()=>{
   $('f-topic').value='all'; $('f-diff').value='all'; $('f-status').value='all';
   $('q').value=''; query=''; renderDSA(); buildTracks(); updateStats();
@@ -1124,7 +1241,7 @@ $('import-file').addEventListener('change',ev=>{
   r.onload=()=>{
     try{
       const parsed=JSON.parse(r.result);
-      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{}};
+      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{},guess:parsed.guess||{}};
       save(); buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Progress imported');
     }catch(e){ toast('That file could not be read as progress data.'); }
   };
@@ -1132,7 +1249,7 @@ $('import-file').addEventListener('change',ev=>{
 });
 $('btn-reset').addEventListener('click',()=>{
   if(confirm('Clear all checked tasks, problems, and streak history? Export first if unsure.')){
-    state={tasks:{},probs:{},log:{}}; save();
+    state={tasks:{},probs:{},log:{},guess:{}}; save();
     buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Everything cleared');
   }
 });
@@ -1145,7 +1262,7 @@ let sync={token:'',gistId:''};
 try{const s=localStorage.getItem(SYNCKEY); if(s) sync=Object.assign(sync,JSON.parse(s));}catch(e){}
 const saveSync=()=>{try{localStorage.setItem(SYNCKEY,JSON.stringify(sync));}catch(e){}};
 const syncOn=()=>!!(sync.token&&sync.gistId);
-const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log});
+const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log,guess:state.guess||{}});
 
 function setSync(kind,msg){
   const s=$('sync-state'), b=$('sync-btn');
@@ -1197,12 +1314,13 @@ async function syncPull(union){
       // first connect on this device: keep everything from both sides
       state.tasks=Object.assign({},remote.tasks||{},state.tasks);
       state.probs=Object.assign({},remote.probs||{},state.probs);
+      state.guess=Object.assign({},remote.guess||{},state.guess||{});
       const log=Object.assign({},remote.log||{});
       for(const k in state.log) log[k]=Math.max(log[k]||0,state.log[k]);
       state.log=log;
       save(true); pulling=false; await syncPush();
     }else if((remote.updatedAt||0)>(state.updatedAt||0)){
-      state={tasks:remote.tasks||{},probs:remote.probs||{},log:remote.log||{},updatedAt:remote.updatedAt||0};
+      state={tasks:remote.tasks||{},probs:remote.probs||{},log:remote.log||{},guess:remote.guess||{},updatedAt:remote.updatedAt||0};
       try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
       pulling=false;
       setSync('ok','Up to date — pulled newer progress from your other device');
@@ -1267,7 +1385,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('sync-overlay').
 window.addEventListener('online',()=>{ if(syncOn()) syncPull(false).catch(()=>{}); });
 
 /* ---------- boot ---------- */
-if(!Array.isArray(ui.openTopics)) ui.openTopics=[TOPICS[0]];
+if(!Array.isArray(ui.openTopics)) ui.openTopics=[PATTERNS[0]];
 applyTheme();
 buildRibbon();
 buildTracks();
