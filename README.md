@@ -2,9 +2,7 @@
 
 A single-file interview prep tracker: a 16-week schedule ribbon, eight prep tracks, and 176 DSA problems with per-topic progress.
 
-**Live:** https://praveenpareek11.github.io/prep-tracker/
-
-Everything is one `index.html` — no build step, no dependencies, no backend. Open the file locally or use the live URL.
+Everything is one `index.html` — no build step, no dependencies, no backend. Open the file directly in a browser.
 
 ## Using it
 
