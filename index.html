@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praveen · Prep Command Center</title>
+<meta name="theme-color" content="#0a0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   tokens
+   ============================================================ */
+:root{
+  --font-ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --font-display:'Syne','Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:999px;
+  --dur:.18s;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --maxw:1180px;
+}
+:root,:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0a0b10;
+  --glow-a:rgba(247,167,42,.10);
+  --glow-b:rgba(74,222,128,.07);
+  --surface:#12151d;
+  --surface-2:#1a1f29;
+  --surface-3:#232936;
+  --border:#232936;
+  --border-2:#333b4d;
+  --text:#e8ebf2;
+  --mid:#9aa5b8;
+  --dim:#6b7588;
+  --accent:#f7a72a;
+  --accent-ink:#0a0b10;
+  --accent-soft:rgba(247,167,42,.13);
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --shadow-2:0 12px 40px rgba(0,0,0,.45);
+  --dsa:#4ade80; --t0:#f7a72a; --t1:#3ecfcf; --t2:#8b7cff;
+  --t3:#f06a6a; --t5:#fb923c; --t6:#f472b6;
+  --ok:#4ade80; --behind:#f06a6a;
+  --scrim:rgba(10,11,16,.72);
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f6f7fa;
+  --glow-a:rgba(217,138,11,.10);
+  --glow-b:rgba(22,163,74,.07);
+  --surface:#ffffff;
+  --surface-2:#f2f4f8;
+  --surface-3:#e7ebf2;
+  --border:#e3e7ef;
+  --border-2:#c8d0de;
+  --text:#12151c;
+  --mid:#4f5867;
+  --dim:#788293;
+  --accent:#d98a0b;
+  --accent-ink:#ffffff;
+  --accent-soft:rgba(217,138,11,.12);
+  --shadow-1:0 1px 2px rgba(16,24,40,.06);
+  --shadow-2:0 12px 36px rgba(16,24,40,.10);
+  --dsa:#16a34a; --t0:#d98a0b; --t1:#0d9488; --t2:#6d4dfc;
+  --t3:#dc2626; --t5:#ea580c; --t6:#db2777;
+  --ok:#16a34a; --behind:#dc2626;
+  --scrim:rgba(246,247,250,.78);
+}
+
+/* ============================================================
+   base
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-ui);
+  font-size:15px;
+  line-height:1.6;
+  letter-spacing:-.005em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 480px at 12% -8%,var(--glow-a),transparent 60%),
+    radial-gradient(760px 420px at 92% 4%,var(--glow-b),transparent 62%);
+}
+.container{max-width:var(--maxw);margin:0 auto;padding:0 22px 96px;position:relative}
+a{color:var(--accent);text-decoration:none}
+button{font-family:inherit;font-size:inherit;cursor:pointer;color:inherit;border:none;background:none}
+input,select{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.hidden{display:none !important}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+::selection{background:var(--accent-soft);color:var(--text)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+/* ============================================================
+   header
+   ============================================================ */
+header{padding:44px 0 30px}
+.head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.eyebrow{
+  font-family:var(--font-mono);font-size:11px;font-weight:500;
+  letter-spacing:.2em;color:var(--accent);text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;
+}
+.eyebrow::before{content:'';width:22px;height:1.5px;background:var(--accent);border-radius:2px;opacity:.7}
+h1{
+  font-family:var(--font-display);
+  font-size:clamp(30px,5vw,46px);font-weight:800;
+  letter-spacing:-.03em;line-height:1.04;
+}
+h1 span{
+  background:linear-gradient(100deg,var(--accent),var(--t5));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sub{color:var(--mid);font-size:14px;margin-top:12px;max-width:70ch}
+.sub b{color:var(--text);font-weight:600}
+.icon-btn{
+  width:38px;height:38px;flex:none;display:grid;place-items:center;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--mid);font-size:16px;box-shadow:var(--shadow-1);
+  transition:color var(--dur),border-color var(--dur),transform var(--dur);
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-2);transform:translateY(-1px)}
+
+/* stat cards */
+.statbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-top:26px}
+.stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:15px 17px;box-shadow:var(--shadow-1);position:relative;overflow:hidden;
+  transition:border-color var(--dur),transform var(--dur);
+}
+.stat:hover{border-color:var(--border-2);transform:translateY(-2px)}
+.stat::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border-2);opacity:.9}
+.stat.a-accent::after{background:var(--accent)} .stat.a-dsa::after{background:var(--dsa)}
+.stat.a-t2::after{background:var(--t2)} .stat.a-t1::after{background:var(--t1)}
+.stat .lbl{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.stat .val{
+  font-family:var(--font-display);font-size:27px;font-weight:800;
+  letter-spacing:-.02em;line-height:1.15;margin-top:4px;font-variant-numeric:tabular-nums;
+}
+.stat .val small{font-family:var(--font-ui);font-size:14px;font-weight:600;color:var(--dim);letter-spacing:0}
+.stat .note{font-size:12px;color:var(--dim);margin-top:2px;line-height:1.4}
+.delta-ok{color:var(--ok);font-weight:600} .delta-behind{color:var(--behind);font-weight:600}
+
+/* overall bar */
+.overall{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 17px 16px;box-shadow:var(--shadow-1)}
+.overall-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.overall-top .t{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.overall-top .m{font-family:var(--font-mono);font-size:12px;color:var(--mid);font-variant-numeric:tabular-nums}
+.track-line{position:relative;height:9px;background:var(--surface-2);border-radius:var(--r-pill);overflow:visible}
+.track-line .fill{position:absolute;inset:0 auto 0 0;border-radius:var(--r-pill);background:linear-gradient(90deg,var(--accent),var(--t5));transition:width .5s var(--ease)}
+.track-line .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.55;border-radius:2px;transition:left .5s var(--ease)}
+
+/* ============================================================
+   sections
+   ============================================================ */
+.section{margin-top:34px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.section-label .thin{letter-spacing:0;text-transform:none;font-family:var(--font-ui);font-size:12.5px;color:var(--dim)}
+
+/* focus card */
+.focus{
+  background:linear-gradient(150deg,var(--accent-soft),transparent 55%),var(--surface);
+  border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--r-md);padding:16px 18px;box-shadow:var(--shadow-1);
+}
+.focus-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.focus-head h3{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.focus-sub{font-size:12.5px;color:var(--mid);margin-bottom:12px}
+.focus-list{display:grid;gap:2px}
+.focus-empty{font-size:13px;color:var(--dim);padding:6px 0}
+
+/* ============================================================
+   ribbon
+   ============================================================ */
+.ribbon{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px 16px 12px;overflow-x:auto;box-shadow:var(--shadow-1)}
+.ribbon-inner{position:relative;min-width:840px;padding-top:26px}
+.week-axis{display:grid;grid-template-columns:168px repeat(16,1fr);margin-bottom:10px}
+.week-axis .wk{text-align:center;padding:0 1px}
+.week-axis .wk b{display:block;font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--mid);letter-spacing:.02em}
+.week-axis .wk i{display:block;font-family:var(--font-mono);font-style:normal;font-size:9.5px;color:var(--dim);margin-top:1px;white-space:nowrap}
+.week-axis .wk.now b{color:var(--accent)}
+.track-row{display:grid;grid-template-columns:168px repeat(16,1fr);align-items:center;height:30px;border-radius:var(--r-xs)}
+.track-row:hover{background:var(--surface-2)}
+.track-row .cell{height:100%;display:flex;align-items:center;padding:0 1px;position:relative}
+.track-row .cell.now{background:var(--accent-soft)}
+.track-name{
+  font-size:12.5px;color:var(--mid);padding-right:12px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px;
+}
+.track-name .dot{width:8px;height:8px;border-radius:3px;flex:none}
+.track-bar{height:16px;width:100%;opacity:.9;transition:opacity var(--dur)}
+.track-row:hover .track-bar{opacity:1}
+.bar-s{border-radius:5px 0 0 5px} .bar-e{border-radius:0 5px 5px 0} .bar-o{border-radius:5px}
+.today-line{position:absolute;top:26px;bottom:2px;width:2px;background:var(--text);opacity:.75;z-index:2;border-radius:2px}
+.today-tag{
+  position:absolute;top:0;transform:translateX(-50%);z-index:3;white-space:nowrap;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--accent-ink);
+  background:var(--accent);padding:2px 9px;border-radius:var(--r-pill);
+}
+.ribbon-note{font-size:12.5px;color:var(--dim);margin-top:12px;line-height:1.5}
+
+/* ============================================================
+   sticky nav / tabs
+   ============================================================ */
+.navbar{
+  position:sticky;top:0;z-index:40;margin:32px -22px 0;padding:12px 22px;
+  background:var(--scrim);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid transparent;transition:border-color var(--dur),box-shadow var(--dur);
+}
+.navbar.stuck{border-bottom-color:var(--border);box-shadow:0 6px 24px rgba(0,0,0,.16)}
+.navbar-inner{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:4px}
+.tab{
+  border-radius:var(--r-xs);padding:8px 16px;font-size:13.5px;font-weight:500;color:var(--mid);
+  display:flex;align-items:center;gap:8px;transition:color var(--dur),background var(--dur);white-space:nowrap;
+}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:var(--shadow-1)}
+.tab .cnt{
+  font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums;
+  background:var(--surface-3);color:var(--mid);padding:1px 7px;border-radius:var(--r-pill);
+}
+.tab.active .cnt{background:rgba(0,0,0,.18);color:var(--accent-ink)}
+.nav-spacer{flex:1}
+
+/* search */
+.search{position:relative;display:flex;align-items:center;min-width:210px;flex:1;max-width:340px}
+.search svg{position:absolute;left:12px;width:15px;height:15px;color:var(--dim);pointer-events:none}
+.search input{
+  width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);font-size:13.5px;padding:9px 34px 9px 34px;transition:border-color var(--dur);
+}
+.search input::placeholder{color:var(--dim)}
+.search input:focus{border-color:var(--border-2);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.search kbd{
+  position:absolute;right:10px;font-family:var(--font-mono);font-size:10.5px;color:var(--dim);
+  border:1px solid var(--border-2);border-radius:4px;padding:1px 5px;pointer-events:none;
+}
+.search input:not(:placeholder-shown)+kbd{display:none}
+
+/* ============================================================
+   controls
+   ============================================================ */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:22px 0 16px}
+select,.small-btn{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--mid);font-size:12.5px;font-weight:500;padding:8px 12px;
+  transition:color var(--dur),border-color var(--dur),background var(--dur);
+}
+select{
+  padding-right:30px;appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+select:hover,.small-btn:hover{color:var(--text);border-color:var(--border-2)}
+.small-btn.primary{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.toolbar-spacer{flex:1}
+
+/* ============================================================
+   track cards
+   ============================================================ */
+.track-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow-1);
+  transition:border-color var(--dur),box-shadow var(--dur);
+}
+.track-card:hover{border-color:var(--border-2)}
+.track-card.open{box-shadow:var(--shadow-2)}
+.track-head{
+  display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;
+  flex-wrap:wrap;width:100%;text-align:left;
+}
+.track-head:hover{background:var(--surface-2)}
+.track-badge{
+  font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;padding:4px 10px;border-radius:var(--r-xs);white-space:nowrap;
+}
+.track-title{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:-.015em;flex:1;min-width:170px}
+.track-window{font-family:var(--font-mono);font-size:11.5px;color:var(--dim);white-space:nowrap}
+.mini-progress{display:flex;align-items:center;gap:10px;min-width:190px}
+.mini-bar{flex:1;height:6px;background:var(--surface-3);border-radius:var(--r-pill);position:relative;overflow:visible}
+.mini-fill{position:absolute;inset:0 auto 0 0;height:100%;border-radius:var(--r-pill);transition:width .45s var(--ease)}
+.mini-exp{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.5;border-radius:2px;transition:left .45s var(--ease)}
+.mini-pct{font-family:var(--font-mono);font-size:11.5px;color:var(--mid);min-width:82px;text-align:right;font-variant-numeric:tabular-nums}
+.chev{color:var(--dim);font-size:11px;transition:transform var(--dur) var(--ease);flex:none}
+.track-card.open .chev,.topic-block.open .chev{transform:rotate(180deg)}
+.track-body{display:none;border-top:1px solid var(--border);padding:14px 18px 18px}
+.track-card.open .track-body{display:block;animation:slideIn .22s var(--ease)}
+@keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.why{
+  font-size:13px;color:var(--mid);margin-bottom:12px;padding-left:12px;
+  border-left:2px solid var(--border-2);line-height:1.55;
+}
+
+/* task rows */
+.task{display:flex;align-items:flex-start;gap:12px;padding:9px 10px;border-radius:var(--r-sm);transition:background var(--dur)}
+.task:hover{background:var(--surface-2)}
+.task label{cursor:pointer;font-size:14px;line-height:1.5;flex:1;transition:color var(--dur)}
+.task .hint{
+  display:block;font-size:12px;color:var(--dim);margin-top:2px;
+  text-decoration:none;font-family:var(--font-mono);letter-spacing:-.01em;
+}
+.task.done label{color:var(--dim)}
+.task.done label>span.txt{text-decoration:line-through;text-decoration-color:var(--border-2)}
+
+/* checkbox */
+.chk{
+  appearance:none;-webkit-appearance:none;flex:none;width:19px;height:19px;margin-top:2px;
+  border:1.5px solid var(--border-2);border-radius:6px;background:var(--surface-2);
+  cursor:pointer;position:relative;transition:background var(--dur),border-color var(--dur),transform var(--dur);
+}
+.chk:hover{border-color:var(--accent)}
+.chk:active{transform:scale(.9)}
+.chk:checked{background:var(--accent);border-color:var(--accent)}
+.chk:checked::after{
+  content:'';position:absolute;left:6px;top:2px;width:5px;height:10px;
+  border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(43deg);
+}
+.chk-dsa:hover{border-color:var(--dsa)}
+.chk-dsa:checked{background:var(--dsa);border-color:var(--dsa)}
+.chk-dsa:checked::after{border-color:var(--bg)}
+
+/* ============================================================
+   dsa view
+   ============================================================ */
+.method{
+  background:linear-gradient(135deg,rgba(74,222,128,.07),transparent 60%),var(--surface);
+  border:1px solid var(--border);border-left:3px solid var(--dsa);
+  border-radius:var(--r-md);padding:16px 18px;margin-bottom:18px;
+  font-size:13.5px;color:var(--mid);line-height:1.65;box-shadow:var(--shadow-1);
+}
+.method b{color:var(--text);font-weight:600}
+.method ol{margin:8px 0 0 18px;display:grid;gap:3px}
+.method li{padding-left:2px}
+.method .kicker{
+  display:block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dsa);margin-bottom:6px;font-weight:600;
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-pill);padding:6px 14px;
+  font-size:12.5px;color:var(--mid);box-shadow:var(--shadow-1);
+}
+.chip b{font-family:var(--font-mono);color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.chip.g b{color:var(--dsa)} .chip.a b{color:var(--accent)}
+
+.topic-block{margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow-1)}
+.topic-block:hover{border-color:var(--border-2)}
+.topic-head{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;width:100%;text-align:left;transition:background var(--dur)}
+.topic-head:hover{background:var(--surface-2)}
+.topic-title{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:-.01em;flex:1}
+.topic-meter{width:78px;height:5px;background:var(--surface-3);border-radius:var(--r-pill);overflow:hidden;flex:none}
+.topic-meter i{display:block;height:100%;background:var(--dsa);border-radius:var(--r-pill);transition:width .4s var(--ease)}
+.topic-count{font-family:var(--font-mono);font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.topic-body{display:none}
+.topic-block.open .topic-body{display:block;border-top:1px solid var(--border)}
+.prob{
+  display:grid;grid-template-columns:20px 1fr auto 74px;gap:12px;align-items:center;
+  padding:9px 16px;border-bottom:1px solid var(--surface-2);transition:background var(--dur);
+}
+.prob:last-child{border-bottom:none}
+.prob:hover{background:var(--surface-2)}
+.prob a{color:var(--text);font-size:13.5px;line-height:1.45;transition:color var(--dur)}
+.prob a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.prob.done a{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--border-2)}
+.pat{font-family:var(--font-mono);font-size:11px;color:var(--dim);white-space:nowrap}
+.diff{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  padding:3px 0;border-radius:var(--r-xs);text-align:center;
+}
+.diff.E{background:color-mix(in srgb,var(--dsa) 14%,transparent);color:var(--dsa)}
+.diff.M{background:var(--accent-soft);color:var(--accent)}
+.empty{color:var(--dim);font-size:13.5px;padding:34px 20px;text-align:center;background:var(--surface);border:1px dashed var(--border-2);border-radius:var(--r-md)}
+mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding:0 2px}
+
+/* ============================================================
+   footer / floating
+   ============================================================ */
+.io-row{display:flex;gap:8px;margin-top:36px;padding-top:22px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.io-note{font-size:12px;color:var(--dim);flex:1;min-width:180px}
+.danger:hover{color:var(--behind);border-color:var(--behind)}
+.to-top{
+  position:fixed;right:22px;bottom:22px;z-index:50;width:42px;height:42px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border-2);color:var(--mid);
+  display:grid;place-items:center;box-shadow:var(--shadow-2);
+  opacity:0;pointer-events:none;transform:translateY(8px);
+  transition:opacity var(--dur),transform var(--dur),color var(--dur);
+}
+.to-top.show{opacity:1;pointer-events:auto;transform:none}
+.to-top:hover{color:var(--text)}
+.toast{
+  position:fixed;left:50%;bottom:28px;z-index:60;transform:translate(-50%,14px);
+  background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-pill);
+  padding:10px 20px;font-size:13px;box-shadow:var(--shadow-2);
+  opacity:0;pointer-events:none;transition:opacity var(--dur),transform var(--dur);
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ============================================================
+   sync
+   ============================================================ */
+.icon-btn.s-ok{color:var(--dsa);border-color:color-mix(in srgb,var(--dsa) 40%,transparent)}
+.icon-btn.s-busy{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.icon-btn.s-err{color:var(--behind);border-color:color-mix(in srgb,var(--behind) 45%,transparent)}
+.head-actions{display:flex;gap:8px;flex:none}
+.overlay{
+  position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);
+  display:grid;place-items:center;padding:20px;overflow-y:auto;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.sheet{
+  width:100%;max-width:560px;background:var(--surface);border:1px solid var(--border-2);
+  border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:24px;
+}
+.sheet h2{font-family:var(--font-display);font-size:21px;font-weight:800;letter-spacing:-.02em}
+.sheet .lede{font-size:13.5px;color:var(--mid);margin:8px 0 18px;line-height:1.6}
+.sheet ol{margin:0 0 18px 20px;font-size:13.5px;color:var(--mid);display:grid;gap:7px;line-height:1.55}
+.sheet ol b,.sheet .lede b{color:var(--text);font-weight:600}
+.sheet code{
+  font-family:var(--font-mono);font-size:12.5px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:5px;padding:1px 6px;color:var(--text);
+}
+.sheet label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.sheet input[type=password],.sheet input[type=text]{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);font-family:var(--font-mono);font-size:13px;padding:11px 12px;
+}
+.sheet input:focus{outline:none;border-color:var(--border-2);box-shadow:0 0 0 3px var(--accent-soft)}
+.sheet-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.btn{
+  background:var(--accent);color:var(--accent-ink);font-size:13.5px;font-weight:600;
+  border-radius:var(--r-sm);padding:10px 18px;transition:opacity var(--dur);
+}
+.btn:hover{opacity:.88}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.sync-state{
+  font-size:12.5px;color:var(--mid);margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;
+}
+.sync-state .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+.sync-state.ok .dot{background:var(--dsa)}
+.sync-state.busy .dot{background:var(--accent)}
+.sync-state.err .dot{background:var(--behind)}
+.warn{
+  font-size:12.5px;color:var(--mid);background:var(--surface-2);border-left:2px solid var(--accent);
+  border-radius:var(--r-xs);padding:10px 13px;margin-top:16px;line-height:1.55;
+}
+
+/* ============================================================
+   responsive
+   ============================================================ */
+@media(max-width:940px){
+  .track-head{row-gap:10px}
+  .track-title{min-width:100%;order:2}
+  .track-window{order:3}
+  .mini-progress{order:4;flex:1;min-width:150px}
+  .chev{order:5}
+}
+@media(max-width:820px){
+  .prob{grid-template-columns:20px 1fr 70px}
+  .pat{display:none}
+  .mini-progress{min-width:140px}
+  .mini-pct{min-width:74px}
+}
+@media(max-width:640px){
+  body{font-size:14.5px}
+  .container{padding:0 16px 90px}
+  header{padding:30px 0 22px}
+  .navbar{margin:26px -16px 0;padding:10px 16px}
+  .navbar-inner{gap:8px}
+  .search{max-width:none;min-width:100%;order:3}
+  .tabs{flex:1}
+  .tab{flex:1;justify-content:center;padding:9px 10px}
+  .statbar{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat .val{font-size:23px}
+  .track-head{gap:10px;padding:14px}
+  .track-title{font-size:16px;min-width:100%;order:2}
+  .track-window{order:3}
+  .mini-progress{order:4;min-width:0;flex:1}
+  .chev{order:5}
+  .task{padding:11px 8px}
+  .to-top{right:14px;bottom:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none !important;animation:none !important}
+}
+@media print{
+  body::before,.navbar,.to-top,.io-row,.toast,.search{display:none !important}
+  .track-body,.topic-body{display:block !important}
+  .track-card,.topic-block,.stat{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="head-top">
+    <div>
+      <div class="eyebrow">Interview Prep · Command Center</div>
+      <h1>Roadmap, <span>Scheduled.</span></h1>
+      <p class="sub">Start <b>Aug 3, 2026</b> → application-ready <b>Nov 16, 2026</b>. DSA runs daily throughout; everything else is compressible and slots around it. Progress saves automatically in this browser.</p>
+    </div>
+    <div class="head-actions">
+      <button class="icon-btn" id="sync-btn" title="Sync across devices" aria-label="Sync across devices">☁</button>
+      <button class="icon-btn" id="theme-btn" title="Toggle light / dark" aria-label="Toggle light or dark theme">◐</button>
+    </div>
+  </div>
+
+  <div class="statbar">
+    <div class="stat a-accent"><div class="lbl">Today</div><div class="val" id="s-week">–</div><div class="note" id="s-date"></div></div>
+    <div class="stat a-t2"><div class="lbl">Days to apply-ready</div><div class="val" id="s-days">–</div><div class="note">Nov 16, 2026</div></div>
+    <div class="stat a-t1"><div class="lbl">Progress vs plan</div><div class="val" id="s-exp">–</div><div class="note" id="s-delta"></div></div>
+    <div class="stat a-dsa"><div class="lbl">DSA solved</div><div class="val" id="s-dsa" style="color:var(--dsa)">0</div><div class="note" id="s-dsa-note">of 0 problems</div></div>
+    <div class="stat a-accent"><div class="lbl">Streak</div><div class="val" id="s-streak">0</div><div class="note">days with ≥1 problem</div></div>
+  </div>
+
+  <div class="overall">
+    <div class="overall-top">
+      <span class="t">Overall completion</span>
+      <span class="m" id="ov-meta">–</span>
+    </div>
+    <div class="track-line"><div class="fill" id="ov-fill" style="width:0%"></div><div class="mark" id="ov-mark" style="left:0%"></div></div>
+  </div>
+</header>
+
+<section class="section" id="focus-section">
+  <div class="section-label">Focus now <span class="thin" id="focus-week"></span></div>
+  <div class="focus">
+    <div class="focus-head"><h3 id="focus-title">This week</h3></div>
+    <div class="focus-sub" id="focus-sub"></div>
+    <div class="focus-list" id="focus-list"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">16-week schedule <span class="thin">ordered by compressibility, not importance</span></div>
+  <div class="ribbon"><div class="ribbon-inner" id="ribbon"></div></div>
+  <p class="ribbon-note">DSA is the only calendar-bound track — it starts first and never pauses. The marker shows where today sits on the plan.</p>
+</section>
+
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-view="tracks" role="tab">Prep Tracks<span class="cnt" id="cnt-tracks">0</span></button>
+      <button class="tab" data-view="dsa" role="tab">DSA Problems<span class="cnt" id="cnt-dsa">0</span></button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="Search tasks & problems…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+</nav>
+
+<div id="view-tracks">
+  <div class="toolbar">
+    <button class="small-btn" data-tracks-toggle="1">Expand all</button>
+    <button class="small-btn" data-tracks-toggle="0">Collapse all</button>
+    <div class="toolbar-spacer"></div>
+    <span class="chip" id="tracks-chip">–</span>
+  </div>
+  <div id="tracks-list"></div>
+</div>
+
+<div id="view-dsa" class="hidden">
+  <div class="method">
+    <span class="kicker">Per-problem loop · non-negotiable</span>
+    <ol>
+      <li>Attempt cold, 25-minute timer.</li>
+      <li>If stuck, study the editorial — then <b>close it</b>.</li>
+      <li>Re-implement from a blank file.</li>
+      <li>Re-solve after 3 days, then again after 2 weeks.</li>
+    </ol>
+    <div style="margin-top:10px">A checkbox here means <b>step 3 done cold</b> — not “read and understood.”</div>
+  </div>
+
+  <div class="toolbar">
+    <select id="f-topic" aria-label="Filter by topic"><option value="all">All topics</option></select>
+    <select id="f-diff" aria-label="Filter by difficulty"><option value="all">All difficulty</option><option value="E">Easy</option><option value="M">Medium</option></select>
+    <select id="f-status" aria-label="Filter by status"><option value="all">All</option><option value="unsolved">Unsolved</option><option value="solved">Solved</option></select>
+    <button class="small-btn" data-topics-toggle="1">Expand all</button>
+    <button class="small-btn" data-topics-toggle="0">Collapse all</button>
+    <button class="small-btn hidden" id="clear-filters">Clear filters</button>
+  </div>
+
+  <div class="chips" id="dsa-chips"></div>
+  <div id="dsa-list"></div>
+</div>
+
+<div class="io-row">
+  <span class="io-note">Saved in this browser only — export a backup before clearing site data.</span>
+  <button class="small-btn" id="btn-export">Export progress</button>
+  <button class="small-btn" id="btn-import">Import progress</button>
+  <input type="file" id="import-file" class="hidden" accept=".json">
+  <button class="small-btn danger" id="btn-reset">Reset all</button>
+</div>
+
+</div>
+
+<div class="overlay hidden" id="sync-overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sync-h">
+    <h2 id="sync-h">Sync across devices</h2>
+    <p class="lede">Your progress is saved to a <b>private Gist</b> on your own GitHub account — not in this public repo, and not on anyone else's server. Paste the token once per device; this browser remembers it.</p>
+    <ol>
+      <li>Open <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">github.com/settings/tokens</a> → <b>Generate new token</b> (fine-grained).</li>
+      <li>Set an expiry you're happy with, then under <b>Account permissions</b> set <code>Gists</code> to <b>Read and write</b>. Leave everything else alone.</li>
+      <li>Generate, copy the token, paste it below.</li>
+    </ol>
+    <label for="sync-token">GitHub token</label>
+    <input type="password" id="sync-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+    <div class="sheet-row">
+      <button class="btn" id="sync-connect">Connect</button>
+      <button class="small-btn" id="sync-now">Sync now</button>
+      <button class="small-btn danger" id="sync-off">Disconnect this device</button>
+      <div class="toolbar-spacer"></div>
+      <button class="small-btn" id="sync-close">Close</button>
+    </div>
+    <div class="sync-state" id="sync-state"><span class="dot"></span><span id="sync-msg">Not syncing — progress stays on this device only.</span></div>
+    <div class="warn">The token is stored in this browser's local storage so the page can save on your behalf. It only has access to your Gists — nothing else on your account. On a shared or public computer, hit <b>Disconnect</b> when you're done.</div>
+  </div>
+</div>
+
+<button class="to-top" id="to-top" title="Back to top" aria-label="Back to top">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PROBLEMS = [{"id":0,"t":"Arrays & Strings","p":"Array Basics","n":"Contains Duplicate","d":"E","u":"https://leetcode.com/problems/contains-duplicate/"},{"id":1,"t":"Arrays & Strings","p":"Array Basics","n":"Concatenation of Array","d":"E","u":"https://leetcode.com/problems/concatenation-of-array/"},{"id":2,"t":"Arrays & Strings","p":"Array Basics","n":"Replace Elements with Greatest Element on Right Side","d":"E","u":"https://leetcode.com/problems/replace-elements-with-greatest-element-on-right-side/"},{"id":3,"t":"Arrays & Strings","p":"Array Basics","n":"Is Subsequence","d":"E","u":"https://leetcode.com/problems/is-subsequence/"},{"id":4,"t":"Arrays & Strings","p":"Array Basics","n":"Length of Last Word","d":"E","u":"https://leetcode.com/problems/length-of-last-word/"},{"id":5,"t":"Arrays & Strings","p":"Array Basics","n":"Majority Element","d":"E","u":"https://leetcode.com/problems/majority-element/"},{"id":6,"t":"Arrays & Strings","p":"Prefix Sum","n":"Find Pivot Index","d":"E","u":"https://leetcode.com/problems/find-pivot-index/"},{"id":7,"t":"Arrays & Strings","p":"Prefix Sum","n":"Range Sum Query - Immutable","d":"E","u":"https://leetcode.com/problems/range-sum-query-immutable/"},{"id":8,"t":"Arrays & Strings","p":"Array Basics","n":"Best Time to Buy and Sell Stock","d":"E","u":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},{"id":9,"t":"Arrays & Strings","p":"String Basics","n":"Valid Anagram","d":"E","u":"https://leetcode.com/problems/valid-anagram/"},{"id":10,"t":"Arrays & Strings","p":"String Basics","n":"Valid Palindrome","d":"E","u":"https://leetcode.com/problems/valid-palindrome/"},{"id":11,"t":"Arrays & Strings","p":"String Basics","n":"Reverse String","d":"E","u":"https://leetcode.com/problems/reverse-string/"},{"id":12,"t":"Arrays & Strings","p":"String Basics","n":"Longest Common Prefix","d":"E","u":"https://leetcode.com/problems/longest-common-prefix/"},{"id":13,"t":"Arrays & Strings","p":"String Basics","n":"Ransom Note","d":"E","u":"https://leetcode.com/problems/ransom-note/"},{"id":14,"t":"Arrays & Strings","p":"String Basics","n":"Isomorphic Strings","d":"E","u":"https://leetcode.com/problems/isomorphic-strings/"},{"id":15,"t":"Arrays & Strings","p":"String Basics","n":"Word Pattern","d":"E","u":"https://leetcode.com/problems/word-pattern/"},{"id":16,"t":"Arrays & Strings","p":"Array Basics","n":"Merge Sorted Array","d":"E","u":"https://leetcode.com/problems/merge-sorted-array/"},{"id":17,"t":"Arrays & Strings","p":"Array Basics","n":"Remove Duplicates from Sorted Array","d":"E","u":"https://leetcode.com/problems/remove-duplicates-from-sorted-array/"},{"id":18,"t":"Arrays & Strings","p":"Array Basics","n":"Remove Element","d":"E","u":"https://leetcode.com/problems/remove-element/"},{"id":19,"t":"Arrays & Strings","p":"Array Basics","n":"Majority Element II","d":"M","u":"https://leetcode.com/problems/majority-element-ii/"},{"id":20,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Two Sum","d":"E","u":"https://leetcode.com/problems/two-sum/"},{"id":21,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Design HashMap","d":"E","u":"https://leetcode.com/problems/design-hashmap/"},{"id":22,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Design HashSet","d":"E","u":"https://leetcode.com/problems/design-hashset/"},{"id":23,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"First Unique Character in a String","d":"E","u":"https://leetcode.com/problems/first-unique-character-in-a-string/"},{"id":24,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Contains Duplicate II","d":"E","u":"https://leetcode.com/problems/contains-duplicate-ii/"},{"id":25,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Isomorphic Strings","d":"E","u":"https://leetcode.com/problems/isomorphic-strings/"},{"id":26,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Word Pattern","d":"E","u":"https://leetcode.com/problems/word-pattern/"},{"id":27,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Longest Consecutive Sequence","d":"M","u":"https://leetcode.com/problems/longest-consecutive-sequence/"},{"id":28,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Top K Frequent Elements","d":"M","u":"https://leetcode.com/problems/top-k-frequent-elements/"},{"id":29,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Encode and Decode Strings","d":"M","u":"https://leetcode.com/problems/encode-and-decode-strings/"},{"id":30,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Subarray Sum Equals K","d":"M","u":"https://leetcode.com/problems/subarray-sum-equals-k/"},{"id":31,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"4Sum II","d":"M","u":"https://leetcode.com/problems/4sum-ii/"},{"id":32,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Insert Delete GetRandom O(1)","d":"M","u":"https://leetcode.com/problems/insert-delete-getrandom-o1/"},{"id":33,"t":"Two Pointers","p":"Two Pointers","n":"Valid Palindrome","d":"E","u":"https://leetcode.com/problems/valid-palindrome/"},{"id":34,"t":"Two Pointers","p":"Two Pointers","n":"Move Zeroes","d":"E","u":"https://leetcode.com/problems/move-zeroes/"},{"id":35,"t":"Two Pointers","p":"Two Pointers","n":"Squares of a Sorted Array","d":"E","u":"https://leetcode.com/problems/squares-of-a-sorted-array/"},{"id":36,"t":"Two Pointers","p":"Two Pointers","n":"Backspace String Compare","d":"E","u":"https://leetcode.com/problems/backspace-string-compare/"},{"id":37,"t":"Two Pointers","p":"Two Pointers","n":"Merge Sorted Array","d":"E","u":"https://leetcode.com/problems/merge-sorted-array/"},{"id":38,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Linked List Cycle","d":"E","u":"https://leetcode.com/problems/linked-list-cycle/"},{"id":39,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Happy Number","d":"E","u":"https://leetcode.com/problems/happy-number/"},{"id":40,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Middle of the Linked List","d":"E","u":"https://leetcode.com/problems/middle-of-the-linked-list/"},{"id":41,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Palindrome Linked List","d":"E","u":"https://leetcode.com/problems/palindrome-linked-list/"},{"id":42,"t":"Two Pointers","p":"Two Pointers","n":"Two Sum II - Input Array Is Sorted","d":"M","u":"https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/"},{"id":43,"t":"Two Pointers","p":"Two Pointers","n":"3Sum","d":"M","u":"https://leetcode.com/problems/3sum/"},{"id":44,"t":"Sliding Window","p":"Sliding Window","n":"Best Time to Buy and Sell Stock","d":"E","u":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},{"id":45,"t":"Sliding Window","p":"Sliding Window","n":"Longest Substring Without Repeating Characters","d":"M","u":"https://leetcode.com/problems/longest-substring-without-repeating-characters/"},{"id":46,"t":"Sliding Window","p":"Sliding Window","n":"Longest Repeating Character Replacement","d":"M","u":"https://leetcode.com/problems/longest-repeating-character-replacement/"},{"id":47,"t":"Sliding Window","p":"Sliding Window","n":"Permutation in String","d":"M","u":"https://leetcode.com/problems/permutation-in-string/"},{"id":48,"t":"Sliding Window","p":"Sliding Window","n":"Find All Anagrams in a String","d":"M","u":"https://leetcode.com/problems/find-all-anagrams-in-a-string/"},{"id":49,"t":"Sliding Window","p":"Sliding Window","n":"Fruit Into Baskets","d":"M","u":"https://leetcode.com/problems/fruit-into-baskets/"},{"id":50,"t":"Sliding Window","p":"Sliding Window","n":"Max Consecutive Ones III","d":"M","u":"https://leetcode.com/problems/max-consecutive-ones-iii/"},{"id":51,"t":"Sliding Window","p":"Sliding Window","n":"Minimum Size Subarray Sum","d":"M","u":"https://leetcode.com/problems/minimum-size-subarray-sum/"},{"id":52,"t":"Sliding Window","p":"Sliding Window","n":"Longest Substring with At Most K Distinct Characters","d":"M","u":"https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/"},{"id":53,"t":"Stacks & Queues","p":"Stack","n":"Valid Parentheses","d":"E","u":"https://leetcode.com/problems/valid-parentheses/"},{"id":54,"t":"Stacks & Queues","p":"Stack","n":"Baseball Game","d":"E","u":"https://leetcode.com/problems/baseball-game/"},{"id":55,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Next Greater Element I","d":"E","u":"https://leetcode.com/problems/next-greater-element-i/"},{"id":56,"t":"Stacks & Queues","p":"Queue","n":"Implement Queue using Stacks","d":"E","u":"https://leetcode.com/problems/implement-queue-using-stacks/"},{"id":57,"t":"Stacks & Queues","p":"Queue","n":"Implement Stack using Queues","d":"E","u":"https://leetcode.com/problems/implement-stack-using-queues/"},{"id":58,"t":"Stacks & Queues","p":"Stack","n":"Min Stack","d":"M","u":"https://leetcode.com/problems/min-stack/"},{"id":59,"t":"Stacks & Queues","p":"Stack","n":"Evaluate Reverse Polish Notation","d":"M","u":"https://leetcode.com/problems/evaluate-reverse-polish-notation/"},{"id":60,"t":"Stacks & Queues","p":"Stack","n":"Generate Parentheses","d":"M","u":"https://leetcode.com/problems/generate-parentheses/"},{"id":61,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Daily Temperatures","d":"M","u":"https://leetcode.com/problems/daily-temperatures/"},{"id":62,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Next Greater Element II","d":"M","u":"https://leetcode.com/problems/next-greater-element-ii/"},{"id":63,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Online Stock Span","d":"M","u":"https://leetcode.com/problems/online-stock-span/"},{"id":64,"t":"Sorting & Binary Search","p":"Binary Search","n":"Binary Search","d":"E","u":"https://leetcode.com/problems/binary-search/"},{"id":65,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search Insert Position","d":"E","u":"https://leetcode.com/problems/search-insert-position/"},{"id":66,"t":"Sorting & Binary Search","p":"Sorting","n":"Merge Sort (implement)","d":"M","u":"https://www.geeksforgeeks.org/merge-sort/"},{"id":67,"t":"Sorting & Binary Search","p":"Sorting","n":"Quick Sort (implement)","d":"M","u":"https://www.geeksforgeeks.org/quick-sort-algorithm/"},{"id":68,"t":"Sorting & Binary Search","p":"Sorting","n":"Sort an Array","d":"M","u":"https://leetcode.com/problems/sort-an-array/"},{"id":69,"t":"Sorting & Binary Search","p":"Sorting","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":70,"t":"Sorting & Binary Search","p":"Sorting","n":"Largest Number","d":"M","u":"https://leetcode.com/problems/largest-number/"},{"id":71,"t":"Sorting & Binary Search","p":"Sorting","n":"Sort Colors","d":"M","u":"https://leetcode.com/problems/sort-colors/"},{"id":72,"t":"Sorting & Binary Search","p":"Sorting","n":"Kth Largest Element in an Array","d":"M","u":"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{"id":73,"t":"Sorting & Binary Search","p":"Binary Search","n":"Find First and Last Position of Element in Sorted Array","d":"M","u":"https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/"},{"id":74,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search in Rotated Sorted Array","d":"M","u":"https://leetcode.com/problems/search-in-rotated-sorted-array/"},{"id":75,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search in Rotated Sorted Array II","d":"M","u":"https://leetcode.com/problems/search-in-rotated-sorted-array-ii/"},{"id":76,"t":"Sorting & Binary Search","p":"Binary Search","n":"Find Minimum in Rotated Sorted Array","d":"M","u":"https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/"},{"id":77,"t":"Linked List","p":"Linked List","n":"Reverse Linked List","d":"E","u":"https://leetcode.com/problems/reverse-linked-list/"},{"id":78,"t":"Linked List","p":"Linked List","n":"Merge Two Sorted Lists","d":"E","u":"https://leetcode.com/problems/merge-two-sorted-lists/"},{"id":79,"t":"Linked List","p":"Linked List","n":"Linked List Cycle","d":"E","u":"https://leetcode.com/problems/linked-list-cycle/"},{"id":80,"t":"Linked List","p":"Linked List","n":"Palindrome Linked List","d":"E","u":"https://leetcode.com/problems/palindrome-linked-list/"},{"id":81,"t":"Linked List","p":"Linked List","n":"Intersection of Two Linked Lists","d":"E","u":"https://leetcode.com/problems/intersection-of-two-linked-lists/"},{"id":82,"t":"Linked List","p":"Linked List","n":"Remove Duplicates from Sorted List","d":"E","u":"https://leetcode.com/problems/remove-duplicates-from-sorted-list/"},{"id":83,"t":"Linked List","p":"Linked List","n":"Reverse Linked List II","d":"M","u":"https://leetcode.com/problems/reverse-linked-list-ii/"},{"id":84,"t":"Linked List","p":"Linked List","n":"Remove Nth Node From End of List","d":"M","u":"https://leetcode.com/problems/remove-nth-node-from-end-of-list/"},{"id":85,"t":"Linked List","p":"Linked List","n":"Reorder List","d":"M","u":"https://leetcode.com/problems/reorder-list/"},{"id":86,"t":"Linked List","p":"Linked List","n":"Linked List Cycle II","d":"M","u":"https://leetcode.com/problems/linked-list-cycle-ii/"},{"id":87,"t":"Linked List","p":"Linked List","n":"Copy List with Random Pointer","d":"M","u":"https://leetcode.com/problems/copy-list-with-random-pointer/"},{"id":88,"t":"Linked List","p":"Linked List","n":"Add Two Numbers","d":"M","u":"https://leetcode.com/problems/add-two-numbers/"},{"id":89,"t":"Linked List","p":"Linked List","n":"Add Two Numbers II","d":"M","u":"https://leetcode.com/problems/add-two-numbers-ii/"},{"id":90,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Maximum Depth of Binary Tree","d":"E","u":"https://leetcode.com/problems/maximum-depth-of-binary-tree/"},{"id":91,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Same Tree","d":"E","u":"https://leetcode.com/problems/same-tree/"},{"id":92,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Invert Binary Tree","d":"E","u":"https://leetcode.com/problems/invert-binary-tree/"},{"id":93,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Subtree of Another Tree","d":"E","u":"https://leetcode.com/problems/subtree-of-another-tree/"},{"id":94,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Diameter of Binary Tree","d":"E","u":"https://leetcode.com/problems/diameter-of-binary-tree/"},{"id":95,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Balanced Binary Tree","d":"E","u":"https://leetcode.com/problems/balanced-binary-tree/"},{"id":96,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Path Sum","d":"E","u":"https://leetcode.com/problems/path-sum/"},{"id":97,"t":"Trees (Binary Tree / BST)","p":"Tree BFS","n":"Average of Levels in Binary Tree","d":"E","u":"https://leetcode.com/problems/average-of-levels-in-binary-tree/"},{"id":98,"t":"Trees (Binary Tree / BST)","p":"Tree BFS","n":"Minimum Depth of Binary Tree","d":"E","u":"https://leetcode.com/problems/minimum-depth-of-binary-tree/"},{"id":99,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Inorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-inorder-traversal/"},{"id":100,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Preorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-preorder-traversal/"},{"id":101,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Postorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-postorder-traversal/"},{"id":102,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Binary Tree Paths","d":"E","u":"https://leetcode.com/problems/binary-tree-paths/"},{"id":103,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Symmetric Tree","d":"E","u":"https://leetcode.com/problems/symmetric-tree/"},{"id":104,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Convert Sorted Array to Binary Search Tree","d":"E","u":"https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/"},{"id":105,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Path Sum II","d":"M","u":"https://leetcode.com/problems/path-sum-ii/"},{"id":106,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Sum Root to Leaf Numbers","d":"M","u":"https://leetcode.com/problems/sum-root-to-leaf-numbers/"},{"id":107,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Flatten Binary Tree to Linked List","d":"M","u":"https://leetcode.com/problems/flatten-binary-tree-to-linked-list/"},{"id":108,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Kth Largest Element in a Stream","d":"E","u":"https://leetcode.com/problems/kth-largest-element-in-a-stream/"},{"id":109,"t":"Heap / Priority Queue","p":"Heap","n":"Last Stone Weight","d":"E","u":"https://leetcode.com/problems/last-stone-weight/"},{"id":110,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Kth Largest Element in an Array","d":"M","u":"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{"id":111,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Top K Frequent Elements","d":"M","u":"https://leetcode.com/problems/top-k-frequent-elements/"},{"id":112,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Top K Frequent Words","d":"M","u":"https://leetcode.com/problems/top-k-frequent-words/"},{"id":113,"t":"Heap / Priority Queue","p":"Top K Elements","n":"K Closest Points to Origin","d":"M","u":"https://leetcode.com/problems/k-closest-points-to-origin/"},{"id":114,"t":"Heap / Priority Queue","p":"K-way Merge","n":"Kth Smallest Element in a Sorted Matrix","d":"M","u":"https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/"},{"id":115,"t":"Heap / Priority Queue","p":"Heap","n":"Task Scheduler","d":"M","u":"https://leetcode.com/problems/task-scheduler/"},{"id":116,"t":"Recursion & Backtracking","p":"Recursion","n":"Climbing Stairs","d":"E","u":"https://leetcode.com/problems/climbing-stairs/"},{"id":117,"t":"Recursion & Backtracking","p":"Subsets Pattern","n":"Subsets","d":"M","u":"https://leetcode.com/problems/subsets/"},{"id":118,"t":"Recursion & Backtracking","p":"Subsets Pattern","n":"Subsets II","d":"M","u":"https://leetcode.com/problems/subsets-ii/"},{"id":119,"t":"Recursion & Backtracking","p":"Backtracking","n":"Permutations","d":"M","u":"https://leetcode.com/problems/permutations/"},{"id":120,"t":"Recursion & Backtracking","p":"Backtracking","n":"Permutations II","d":"M","u":"https://leetcode.com/problems/permutations-ii/"},{"id":121,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combinations","d":"M","u":"https://leetcode.com/problems/combinations/"},{"id":122,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum","d":"M","u":"https://leetcode.com/problems/combination-sum/"},{"id":123,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum II","d":"M","u":"https://leetcode.com/problems/combination-sum-ii/"},{"id":124,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum III","d":"M","u":"https://leetcode.com/problems/combination-sum-iii/"},{"id":125,"t":"Recursion & Backtracking","p":"Backtracking","n":"Word Search","d":"M","u":"https://leetcode.com/problems/word-search/"},{"id":126,"t":"Graphs","p":"Graph DFS/BFS","n":"Flood Fill","d":"E","u":"https://leetcode.com/problems/flood-fill/"},{"id":127,"t":"Graphs","p":"Graph DFS/BFS","n":"Number of Islands","d":"M","u":"https://leetcode.com/problems/number-of-islands/"},{"id":128,"t":"Graphs","p":"Graph DFS/BFS","n":"Max Area of Island","d":"M","u":"https://leetcode.com/problems/max-area-of-island/"},{"id":129,"t":"Graphs","p":"Graph DFS/BFS","n":"Clone Graph","d":"M","u":"https://leetcode.com/problems/clone-graph/"},{"id":130,"t":"Graphs","p":"Graph DFS/BFS","n":"Islands and Treasure (Walls and Gates)","d":"M","u":"https://leetcode.com/problems/walls-and-gates/"},{"id":131,"t":"Graphs","p":"Graph DFS/BFS","n":"Rotting Oranges","d":"M","u":"https://leetcode.com/problems/rotting-oranges/"},{"id":132,"t":"Graphs","p":"Graph DFS/BFS","n":"Pacific Atlantic Water Flow","d":"M","u":"https://leetcode.com/problems/pacific-atlantic-water-flow/"},{"id":133,"t":"Graphs","p":"Graph DFS/BFS","n":"Surrounded Regions","d":"M","u":"https://leetcode.com/problems/surrounded-regions/"},{"id":134,"t":"Graphs","p":"Graph DFS/BFS","n":"01 Matrix","d":"M","u":"https://leetcode.com/problems/01-matrix/"},{"id":135,"t":"Graphs","p":"Graph DFS/BFS","n":"As Far from Land as Possible","d":"M","u":"https://leetcode.com/problems/as-far-from-land-as-possible/"},{"id":136,"t":"Graphs","p":"Topological Sort","n":"Course Schedule","d":"M","u":"https://leetcode.com/problems/course-schedule/"},{"id":137,"t":"Graphs","p":"Topological Sort","n":"Course Schedule II","d":"M","u":"https://leetcode.com/problems/course-schedule-ii/"},{"id":138,"t":"Graphs","p":"Topological Sort","n":"Sequence Reconstruction","d":"M","u":"https://leetcode.com/problems/sequence-reconstruction/"},{"id":139,"t":"Dynamic Programming","p":"1D DP","n":"Climbing Stairs","d":"E","u":"https://leetcode.com/problems/climbing-stairs/"},{"id":140,"t":"Dynamic Programming","p":"1D DP","n":"Min Cost Climbing Stairs","d":"E","u":"https://leetcode.com/problems/min-cost-climbing-stairs/"},{"id":141,"t":"Dynamic Programming","p":"1D DP","n":"House Robber","d":"M","u":"https://leetcode.com/problems/house-robber/"},{"id":142,"t":"Dynamic Programming","p":"1D DP","n":"House Robber II","d":"M","u":"https://leetcode.com/problems/house-robber-ii/"},{"id":143,"t":"Dynamic Programming","p":"1D DP","n":"Decode Ways","d":"M","u":"https://leetcode.com/problems/decode-ways/"},{"id":144,"t":"Dynamic Programming","p":"1D DP","n":"Coin Change","d":"M","u":"https://leetcode.com/problems/coin-change/"},{"id":145,"t":"Dynamic Programming","p":"1D DP","n":"Coin Change II","d":"M","u":"https://leetcode.com/problems/coin-change-ii/"},{"id":146,"t":"Dynamic Programming","p":"1D DP","n":"Maximum Subarray","d":"M","u":"https://leetcode.com/problems/maximum-subarray/"},{"id":147,"t":"Dynamic Programming","p":"1D DP","n":"Word Break","d":"M","u":"https://leetcode.com/problems/word-break/"},{"id":148,"t":"Dynamic Programming","p":"1D DP","n":"Longest Increasing Subsequence","d":"M","u":"https://leetcode.com/problems/longest-increasing-subsequence/"},{"id":149,"t":"Dynamic Programming","p":"1D DP","n":"Number of Longest Increasing Subsequence","d":"M","u":"https://leetcode.com/problems/number-of-longest-increasing-subsequence/"},{"id":150,"t":"Dynamic Programming","p":"1D DP","n":"Partition Equal Subset Sum","d":"M","u":"https://leetcode.com/problems/partition-equal-subset-sum/"},{"id":151,"t":"Dynamic Programming","p":"1D DP","n":"Combination Sum IV","d":"M","u":"https://leetcode.com/problems/combination-sum-iv/"},{"id":152,"t":"Dynamic Programming","p":"1D DP","n":"Perfect Squares","d":"M","u":"https://leetcode.com/problems/perfect-squares/"},{"id":153,"t":"Dynamic Programming","p":"1D DP","n":"Integer Break","d":"M","u":"https://leetcode.com/problems/integer-break/"},{"id":154,"t":"Dynamic Programming","p":"2D DP","n":"Unique Paths","d":"M","u":"https://leetcode.com/problems/unique-paths/"},{"id":155,"t":"Greedy","p":"Greedy","n":"Lemonade Change","d":"E","u":"https://leetcode.com/problems/lemonade-change/"},{"id":156,"t":"Greedy","p":"Greedy","n":"Jump Game","d":"M","u":"https://leetcode.com/problems/jump-game/"},{"id":157,"t":"Greedy","p":"Greedy","n":"Jump Game II","d":"M","u":"https://leetcode.com/problems/jump-game-ii/"},{"id":158,"t":"Greedy","p":"Greedy","n":"Gas Station","d":"M","u":"https://leetcode.com/problems/gas-station/"},{"id":159,"t":"Greedy","p":"Greedy","n":"Task Scheduler","d":"M","u":"https://leetcode.com/problems/task-scheduler/"},{"id":160,"t":"Greedy","p":"Greedy","n":"Partition Labels","d":"M","u":"https://leetcode.com/problems/partition-labels/"},{"id":161,"t":"Greedy","p":"Greedy","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":162,"t":"Intervals","p":"Merge Intervals","n":"Meeting Rooms","d":"E","u":"https://leetcode.com/problems/meeting-rooms/"},{"id":163,"t":"Intervals","p":"Merge Intervals","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":164,"t":"Intervals","p":"Merge Intervals","n":"Insert Interval","d":"M","u":"https://leetcode.com/problems/insert-interval/"},{"id":165,"t":"Intervals","p":"Merge Intervals","n":"Non-overlapping Intervals","d":"M","u":"https://leetcode.com/problems/non-overlapping-intervals/"},{"id":166,"t":"Intervals","p":"Merge Intervals","n":"Meeting Rooms II","d":"M","u":"https://leetcode.com/problems/meeting-rooms-ii/"},{"id":167,"t":"Intervals","p":"Merge Intervals","n":"Minimum Number of Arrows to Burst Balloons","d":"M","u":"https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/"},{"id":168,"t":"Intervals","p":"Merge Intervals","n":"Interval List Intersections","d":"M","u":"https://leetcode.com/problems/interval-list-intersections/"},{"id":169,"t":"Intervals","p":"Merge Intervals","n":"My Calendar I","d":"M","u":"https://leetcode.com/problems/my-calendar-i/"},{"id":170,"t":"Matrix","p":"Matrix","n":"Rotate Image","d":"M","u":"https://leetcode.com/problems/rotate-image/"},{"id":171,"t":"Matrix","p":"Matrix","n":"Spiral Matrix","d":"M","u":"https://leetcode.com/problems/spiral-matrix/"},{"id":172,"t":"Matrix","p":"Matrix","n":"Spiral Matrix II","d":"M","u":"https://leetcode.com/problems/spiral-matrix-ii/"},{"id":173,"t":"Matrix","p":"Matrix","n":"Set Matrix Zeroes","d":"M","u":"https://leetcode.com/problems/set-matrix-zeroes/"},{"id":174,"t":"Matrix","p":"Matrix","n":"Word Search","d":"M","u":"https://leetcode.com/problems/word-search/"},{"id":175,"t":"Matrix","p":"Matrix","n":"Number of Islands","d":"M","u":"https://leetcode.com/problems/number-of-islands/"}];
+
+/* ---------- schedule config ---------- */
+const START = new Date('2026-08-03T00:00:00');
+const READY = new Date('2026-11-16T00:00:00');
+const DSA_END = new Date('2026-12-06T00:00:00'); // problems run ~18 wks
+const wk = (n)=> new Date(START.getTime() + (n-1)*7*86400000); // start of week n
+
+const TRACKS = [
+ {id:'dsa-concepts', color:'var(--dsa)', badge:'DSA · PHASE 1', title:'DSA Concept Foundations', w:[1,3],
+  why:'Bounded input phase. One coherent source, timeboxed. Solve 1–2 easies daily on covered topics from day one.',
+  tasks:[
+   ['Big-O + recursion tree reasoning (Abdul Bari 1–2 / NeetCode course intro)','~2 hrs'],
+   ['Arrays + prefix sums — concept unit','solve 2 easies same day'],
+   ['Hashing: hashmap/hashset internals','solve 2 easies same day'],
+   ['Two pointers + sliding window ideas','solve 2 easies same day'],
+   ['Stack + queue, monotonic stack intuition','solve 2 easies same day'],
+   ['Binary search + rotated variants','solve 2 easies same day'],
+   ['Linked list mechanics — reverse until 2-min cold','the classic must-know'],
+   ['Trees: traversals recursive + iterative, BFS/DFS','solve 2 easies same day'],
+   ['Heaps: how they balance, top-k idea','~1.5 hrs'],
+   ['Graph representation + BFS/DFS + DP intro (memo vs tab)','~2 hrs'],
+  ]},
+ {id:'t0', color:'var(--t0)', badge:'T0 · DO FIRST', title:'Narrative & Positioning', w:[1,2],
+  why:'~8 hours total, used in 80% of every interview. Two weekends, done.',
+  tasks:[
+   ['Write 100-word intro script','today — changes how everything else lands'],
+   ['STAR story: AP-Trace (98% runtime, 25+ clients)','write + 5 follow-ups'],
+   ['STAR story: Knowledge Assist (RAG→multi-agent, why LangGraph)','write + 5 follow-ups'],
+   ['STAR story: Insights AI (design→build→deploy)','write + 5 follow-ups'],
+   ['$400M Safety Stock as 60-second business STAR','no deep tech'],
+   ['Resume: lead with Genpact, add Insights AI as featured project','action verb + metric + impact per bullet'],
+   ['LinkedIn headline → Senior GenAI Engineer | Multi-Agent Systems','5 min'],
+  ]},
+ {id:'t1', color:'var(--t1)', badge:'T1 · FILL GAPS', title:'Core ML Math', w:[3,6],
+  why:'Your actual gap tier. StatQuest-crammable — 4 weeks.',
+  tasks:[
+   ['OLS derivation + implement in numpy','X.T@X inverse @X.T@y'],
+   ['Ridge vs Lasso geometry — why L1 zeros features','3-sentence interview answer'],
+   ['Random Forest internals: bagging, OOB, decorrelation','StatQuest playlist'],
+   ['GBM + XGBoost vs LightGBM','90-second answer ready'],
+   ['Bayes theorem with concrete example + frequentist vs Bayesian','link to Safety Stock priors'],
+   ['A/B testing end-to-end: power, Type I/II, pitfalls','design one for a rec feature'],
+   ['PCA via SVD — implement in numpy, compare sklearn','eigenvectors explained plainly'],
+   ['Metrics deep-dive: ROC vs PR-AUC, NDCG/MRR','45-sec "why not accuracy" answer'],
+  ]},
+ {id:'t2', color:'var(--t2)', badge:'T2 · MOAT (GAPS ONLY)', title:'GenAI Depth — Gap Cards', w:[7,9],
+  why:'Polish cards deferred to week 13 — you already own that material. Only true gaps here.',
+  tasks:[
+   ['Karpathy "Let\'s build GPT" — full 2 hrs','weekend morning'],
+   ['Multi-head attention: Q/K/V — what each computes','explain without hand-waving'],
+   ['KV cache — what, why it speeds inference','commonly asked, senior GenAI'],
+   ['Positional encodings: sinusoidal vs RoPE vs ALiBi','conceptual'],
+   ['Flash attention intuition + quadratic context cost','conceptual'],
+   ['LoRA/QLoRA: r, alpha, why low-rank works','Raschka blog'],
+   ['Fine-tune vs RAG vs prompting — opinionated decision tree','clear interview answer'],
+   ['RLHF intuition: reward model + PPO','explain, not implement'],
+  ]},
+ {id:'t3', color:'var(--t3)', badge:'T3 · SENIOR SIGNAL', title:'ML System Design', w:[10,12],
+  why:'What separates senior from mid. You built real systems — frame it that way.',
+  tasks:[
+   ['Whiteboard answer 1: RAG at 10M docs / 1000 concurrent users','30-min full design'],
+   ['Whiteboard answer 2: multi-agent orchestration backend','from KA, then critique it'],
+   ['Whiteboard answer 3: invoice dedup pipeline at scale','from AP-Trace'],
+   ['Feature stores + training-serving skew concepts','Feast docs, 30 min'],
+   ['Drift monitoring + retraining triggers','"how do you know it degraded?"'],
+   ['Serving: batching, model warming, p99 under load','formalise your AP-Trace story'],
+   ['2 self-run design mocks, timed, out loud','record yourself'],
+  ]},
+ {id:'t5', color:'var(--t5)', badge:'T5 + T2 POLISH', title:'SQL + Articulation Pass', w:[13,14],
+  why:'SQL is embarrassing to fail. Polish cards return here as articulation, not learning.',
+  tasks:[
+   ['Window functions until automatic: ROW_NUMBER, LAG, running totals','Mode tutorial'],
+   ['Nth-highest + rolling 7-day average patterns cold','the two classic asks'],
+   ['LeetCode SQL top 50 — mediums','25+ done'],
+   ['Recursive CTEs + anti-joins','NOT EXISTS pattern'],
+   ['KA architecture — 5-minute structured walkthrough, rehearsed','agents, routing, fallback, memory'],
+   ['Docling vs recursive splitter — written case study','genuine differentiator'],
+   ['Cost/latency answers: model routing, semantic caching, streaming','concrete numbers from your work'],
+  ]},
+ {id:'t6', color:'var(--t6)', badge:'T6 · BEHAVIOURAL', title:'Leadership Stories', w:[13,14],
+  why:'At senior level this is half the interview. Material already exists — write it down.',
+  tasks:[
+   ['8 STAR stories written: influence, ambiguity, risk, mentorship, failure, cross-team','writing clarifies them'],
+   ['Amazon LPs — review all 16','many companies use LP-style silently'],
+   ['Record yourself: 3 stories, under 2 minutes each','natural, not rehearsed'],
+   ['Explain LangGraph Supervisor in 60 seconds to a non-tech listener','practice on someone real'],
+  ]},
+ {id:'mocks', color:'var(--accent)', badge:'W15–16 · LAUNCH', title:'Mocks & Applications', w:[15,16],
+  why:'Talking-while-coding is a separate skill. Then apply — DSA keeps running underneath.',
+  tasks:[
+   ['4 mock interviews: 2 DSA, 1 system design, 1 behavioural','Pramp / interviewing.io / peers'],
+   ['Target list: 20 companies (unicorns → big tech AI teams)','tiered by preference'],
+   ['Applications live: 3–5/week, tailored','start with tier-2 targets to calibrate'],
+  ]},
+];
+
+/* ---------- state ---------- */
+const KEY='praveen-prep-v1';
+const UIKEY='praveen-prep-ui-v1';
+let state={tasks:{},probs:{},log:{}};
+try{const s=localStorage.getItem(KEY); if(s) state=Object.assign(state,JSON.parse(s));}catch(e){}
+let ui={theme:'dark',view:'tracks',openTracks:['dsa-concepts'],openTopics:null};
+try{const s=localStorage.getItem(UIKEY); if(s) ui=Object.assign(ui,JSON.parse(s));}catch(e){}
+
+const save=(quiet)=>{
+  state.updatedAt=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+  if(!quiet) schedulePush();
+};
+const saveUI=()=>{try{localStorage.setItem(UIKEY,JSON.stringify(ui));}catch(e){}};
+const today=()=>new Date().toISOString().slice(0,10);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const fmtDate=(d,o)=>d.toLocaleDateString('en-IN',o);
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const shortDate=d=>d.getDate()+' '+MON[d.getMonth()];
+
+let query='';
+const matches=t=>!query||t.toLowerCase().includes(query);
+function hl(t){
+  const e=esc(t);
+  if(!query) return e;
+  const i=e.toLowerCase().indexOf(query);
+  if(i<0) return e;
+  return e.slice(0,i)+'<mark>'+e.slice(i,i+query.length)+'</mark>'+e.slice(i+query.length);
+}
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',ui.theme);
+  $('theme-btn').textContent = ui.theme==='dark' ? '◐' : '◑';
+}
+$('theme-btn').addEventListener('click',()=>{
+  ui.theme = ui.theme==='dark'?'light':'dark'; saveUI(); applyTheme();
+});
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  const el=$('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+/* ---------- schedule helpers ---------- */
+function curWeek(){
+  const n=new Date();
+  if(n<START) return 0;
+  return Math.floor((n-START)/(7*86400000))+1;
+}
+function expectedFrac(a,b){
+  const s=wk(a), e=new Date(wk(b).getTime()+7*86400000), now=new Date();
+  if(now<=s) return 0; if(now>=e) return 1; return (now-s)/(e-s);
+}
+const trackDone=t=>t.tasks.filter((_,i)=>state.tasks[t.id+'-'+i]).length;
+
+/* ---------- ribbon ---------- */
+function buildRibbon(){
+  const R=$('ribbon'), cw=curWeek();
+  let axis='<div class="week-axis"><div></div>';
+  for(let i=1;i<=16;i++){
+    axis+='<div class="wk'+(i===cw?' now':'')+'"><b>W'+i+'</b><i>'+shortDate(wk(i))+'</i></div>';
+  }
+  axis+='</div>';
+
+  const bars=[['DSA problems','var(--dsa)',1,16]]
+    .concat([['DSA concepts','color-mix(in srgb,var(--dsa) 45%,transparent)',1,3]])
+    .concat(TRACKS.filter(t=>t.id!=='dsa-concepts').map(t=>[t.title,t.color,t.w[0],t.w[1]]));
+
+  let rows='';
+  for(const [name,color,a,b] of bars){
+    rows+='<div class="track-row"><div class="track-name"><span class="dot" style="background:'+color+'"></span>'+esc(name)+'</div>';
+    for(let i=1;i<=16;i++){
+      const on=i>=a&&i<=b;
+      let cls='cell'+(i===cw?' now':'');
+      if(!on){ rows+='<div class="'+cls+'"></div>'; continue; }
+      const shape = a===b?'bar-o':(i===a?'bar-s':(i===b?'bar-e':''));
+      rows+='<div class="'+cls+'"><div class="track-bar '+shape+'" style="background:'+color+'" title="'+esc(name)+' · W'+a+'–W'+b+'"></div></div>';
+    }
+    rows+='</div>';
+  }
+  R.innerHTML=axis+rows;
+
+  const now=new Date(), total=16*7*86400000;
+  const frac=clamp((now-START)/total,0,1);
+  const left='calc(168px + (100% - 168px) * '+frac+')';
+  const tag = now<START ? 'starts '+shortDate(START) : shortDate(now);
+  R.insertAdjacentHTML('beforeend',
+    '<div class="today-line" style="left:'+left+'"></div><div class="today-tag" style="left:'+left+'">'+tag+'</div>');
+  // sit the vertical marker just below the axis, whatever height it renders at
+  const ax=R.querySelector('.week-axis');
+  R.querySelector('.today-line').style.top=(ax.offsetTop+ax.offsetHeight)+'px';
+}
+
+/* ---------- focus card ---------- */
+function renderFocus(){
+  const cw=curWeek();
+  const active=TRACKS.filter(t=>cw===0 ? t.w[0]===1 : (cw>=t.w[0]&&cw<=t.w[1]));
+  const pool=(active.length?active:TRACKS).filter(t=>trackDone(t)<t.tasks.length);
+
+  $('focus-week').textContent = cw===0 ? '· plan starts Aug 3, 2026' : '· week '+Math.min(cw,16)+' of 16';
+  $('focus-title').textContent = cw===0 ? 'Get a head start' : (active.length ? active.map(t=>t.title).join(' + ') : 'Wrap up what is open');
+
+  const doneToday=state.log[today()]||0;
+  $('focus-sub').innerHTML = 'DSA target ~2 problems/day, 6 days/week · <b style="color:'+(doneToday>=2?'var(--ok)':'var(--mid)')+'">'+doneToday+' logged today</b>';
+
+  const items=[];
+  for(const t of pool){
+    t.tasks.forEach((task,i)=>{
+      const id=t.id+'-'+i;
+      if(!state.tasks[id]) items.push({id,t,task});
+    });
+  }
+  const L=$('focus-list');
+  if(!items.length){ L.innerHTML='<div class="focus-empty">Nothing open in the current window — good place to pull work forward.</div>'; return; }
+  L.innerHTML=items.slice(0,5).map(({id,t,task})=>
+    '<div class="task"><input class="chk" type="checkbox" id="f-'+id+'" data-task="'+id+'">'
+    +'<label for="f-'+id+'"><span class="txt">'+esc(task[0])+'</span>'
+    +'<span class="hint" style="color:'+t.color+'">'+esc(t.badge)+'</span></label></div>'
+  ).join('');
+}
+
+/* ---------- tracks ---------- */
+function buildTracks(){
+  const V=$('tracks-list');
+  let shown=0;
+  const html=TRACKS.map(t=>{
+    const hitTrack = matches(t.title.toLowerCase())||matches(t.badge.toLowerCase());
+    const tasks=t.tasks.map((task,i)=>({task,i}))
+      .filter(({task})=>!query||hitTrack||matches(task[0].toLowerCase())||matches(task[1].toLowerCase()));
+    if(query&&!tasks.length) return '';
+    shown++;
+    const open = query ? true : ui.openTracks.includes(t.id);
+    const items=tasks.map(({task,i})=>{
+      const id=t.id+'-'+i, done=!!state.tasks[id];
+      return '<div class="task'+(done?' done':'')+'" data-row="'+id+'">'
+        +'<input class="chk" type="checkbox" id="'+id+'" data-task="'+id+'"'+(done?' checked':'')+'>'
+        +'<label for="'+id+'"><span class="txt">'+hl(task[0])+'</span><span class="hint">'+hl(task[1])+'</span></label></div>';
+    }).join('');
+    const soft='color-mix(in srgb,'+t.color+' 13%,transparent)';
+    const line='color-mix(in srgb,'+t.color+' 28%,transparent)';
+    return '<div class="track-card'+(open?' open':'')+'" id="card-'+t.id+'">'
+      +'<button class="track-head" data-track="'+t.id+'" aria-expanded="'+open+'">'
+        +'<span class="track-badge" style="background:'+soft+';color:'+t.color+';box-shadow:inset 0 0 0 1px '+line+'">'+esc(t.badge)+'</span>'
+        +'<span class="track-title">'+hl(t.title)+'</span>'
+        +'<span class="track-window">W'+t.w[0]+'–W'+t.w[1]+' · '+fmtDate(wk(t.w[0]),{day:'numeric',month:'short'})+'</span>'
+        +'<span class="mini-progress"><span class="mini-bar"><span class="mini-fill" id="fill-'+t.id+'" style="background:'+t.color+'"></span><span class="mini-exp" id="exp-'+t.id+'"></span></span><span class="mini-pct" id="pct-'+t.id+'"></span></span>'
+        +'<span class="chev">▼</span>'
+      +'</button>'
+      +'<div class="track-body"><div class="why">'+esc(t.why)+'</div>'+items+'</div></div>';
+  }).join('');
+  V.innerHTML = shown ? html : '<div class="empty">No tasks match “'+esc(query)+'”.</div>';
+}
+
+function toggleTask(id){
+  if(state.tasks[id]) delete state.tasks[id]; else state.tasks[id]=1;
+  save();
+  document.querySelectorAll('[data-task="'+id+'"]').forEach(el=>{
+    el.checked=!!state.tasks[id];
+    const row=el.closest('.task'); if(row&&row.dataset.row) row.classList.toggle('done',!!state.tasks[id]);
+  });
+  updateStats();
+  setTimeout(renderFocus,220);
+}
+
+/* ---------- dsa ---------- */
+const TOPICS=[...new Set(PROBLEMS.map(p=>p.t))];
+function buildDSAFilters(){
+  const sel=$('f-topic');
+  TOPICS.forEach(t=>{const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o);});
+}
+function filtersActive(){
+  return $('f-topic').value!=='all'||$('f-diff').value!=='all'||$('f-status').value!=='all'||!!query;
+}
+function renderDSA(){
+  const ft=$('f-topic').value, fd=$('f-diff').value, fs=$('f-status').value;
+  $('clear-filters').classList.toggle('hidden',!filtersActive());
+  let html='';
+  for(const t of TOPICS){
+    if(ft!=='all'&&ft!==t) continue;
+    const topicHit=matches(t.toLowerCase());
+    const ps=PROBLEMS.filter(p=>p.t===t
+      && (fd==='all'||p.d===fd)
+      && (fs==='all'||(fs==='solved')===!!state.probs[p.id])
+      && (!query||topicHit||matches(p.n.toLowerCase())||matches(p.p.toLowerCase())));
+    if(!ps.length) continue;
+    const all=PROBLEMS.filter(p=>p.t===t), done=all.filter(p=>state.probs[p.id]).length;
+    const open = (query||fs!=='all'||ft!=='all') ? true : ui.openTopics.includes(t);
+    html+='<div class="topic-block'+(open?' open':'')+'">'
+      +'<button class="topic-head" data-topic="'+esc(t)+'" aria-expanded="'+open+'">'
+      +'<span class="topic-title">'+hl(t)+'</span>'
+      +'<span class="topic-meter"><i style="width:'+Math.round(done/all.length*100)+'%"></i></span>'
+      +'<span class="topic-count">'+done+' / '+all.length+'</span>'
+      +'<span class="chev">▼</span></button><div class="topic-body">'
+      +ps.map(p=>{
+        const d=!!state.probs[p.id];
+        return '<div class="prob'+(d?' done':'')+'" data-prow="'+p.id+'">'
+          +'<input class="chk chk-dsa" type="checkbox" data-prob="'+p.id+'"'+(d?' checked':'')+' aria-label="'+esc(p.n)+'">'
+          +'<a href="'+p.u+'" target="_blank" rel="noopener">'+hl(p.n)+'</a>'
+          +'<span class="pat">'+hl(p.p)+'</span>'
+          +'<span class="diff '+p.d+'">'+(p.d==='E'?'Easy':'Medium')+'</span></div>';
+      }).join('')
+      +'</div></div>';
+  }
+  $('dsa-list').innerHTML = html || '<div class="empty">Nothing matches these filters.</div>';
+  renderChips();
+}
+function renderChips(){
+  const solved=Object.keys(state.probs).length;
+  const e=PROBLEMS.filter(p=>p.d==='E'&&state.probs[p.id]).length, m=solved-e;
+  const totE=PROBLEMS.filter(p=>p.d==='E').length;
+  $('dsa-chips').innerHTML=
+     '<span class="chip g"><b>'+solved+'</b> of '+PROBLEMS.length+' solved</span>'
+    +'<span class="chip"><b>'+e+'</b> / '+totE+' Easy</span>'
+    +'<span class="chip"><b>'+m+'</b> / '+(PROBLEMS.length-totE)+' Medium</span>'
+    +'<span class="chip a"><b>'+(state.log[today()]||0)+'</b> today · target 2</span>';
+}
+function toggleProb(id){
+  const wasFiltered=$('f-status').value!=='all';
+  if(state.probs[id]) delete state.probs[id];
+  else { state.probs[id]=1; state.log[today()]=(state.log[today()]||0)+1; }
+  save();
+  if(wasFiltered){ renderDSA(); }
+  else{
+    const row=document.querySelector('[data-prow="'+id+'"]');
+    if(row) row.classList.toggle('done',!!state.probs[id]);
+    const p=PROBLEMS.find(x=>x.id===id);
+    const head=document.querySelector('[data-topic="'+CSS.escape(p.t)+'"]')||[...document.querySelectorAll('[data-topic]')].find(h=>h.dataset.topic===p.t);
+    if(head){
+      const all=PROBLEMS.filter(x=>x.t===p.t), done=all.filter(x=>state.probs[x.id]).length;
+      head.querySelector('.topic-count').textContent=done+' / '+all.length;
+      head.querySelector('.topic-meter i').style.width=Math.round(done/all.length*100)+'%';
+    }
+    renderChips();
+  }
+  updateStats();
+}
+
+/* ---------- stats ---------- */
+function updateStats(){
+  const now=new Date(), cw=curWeek();
+  $('s-week').textContent = cw===0?'Pre‑start':(cw>16?'W16+':'Week '+cw);
+  $('s-date').textContent = fmtDate(now,{weekday:'short',day:'numeric',month:'short'});
+  $('s-days').textContent = Math.max(0,Math.ceil((READY-now)/86400000));
+
+  let expSum=0, actSum=0, wSum=0, taskDone=0, taskTotal=0;
+  for(const t of TRACKS){
+    const done=trackDone(t), act=done/t.tasks.length, exp=expectedFrac(t.w[0],t.w[1]);
+    taskDone+=done; taskTotal+=t.tasks.length;
+    const f=$('fill-'+t.id); if(f) f.style.width=(act*100)+'%';
+    const x=$('exp-'+t.id); if(x) x.style.left=(exp*100)+'%';
+    const p=$('pct-'+t.id); if(p) p.textContent=Math.round(act*100)+'% / '+Math.round(exp*100)+'%';
+    expSum+=exp; actSum+=act; wSum+=1;
+  }
+  const dExp=clamp((now-START)/(DSA_END-START),0,1);
+  const dAct=Object.keys(state.probs).length/PROBLEMS.length;
+  expSum+=dExp*3; actSum+=dAct*3; wSum+=3;
+
+  const exp=Math.round(expSum/wSum*100), act=Math.round(actSum/wSum*100), d=act-exp;
+  $('s-exp').innerHTML=act+'% <small>vs '+exp+'%</small>';
+  const de=$('s-delta');
+  de.textContent = d>=0 ? '+'+d+' pts — on track' : d+' pts — behind';
+  de.className='note '+(d>=0?'delta-ok':'delta-behind');
+
+  $('ov-fill').style.width=act+'%';
+  $('ov-mark').style.left=exp+'%';
+  $('ov-meta').textContent=act+'% done · '+exp+'% expected by today';
+
+  $('s-dsa').textContent=Object.keys(state.probs).length;
+  $('s-dsa-note').textContent='of '+PROBLEMS.length+' problems';
+  $('tracks-chip').innerHTML='<b>'+taskDone+'</b> of '+taskTotal+' tasks done';
+
+  let streak=0, dcur=new Date();
+  if(!state.log[today()]) dcur=new Date(dcur.getTime()-86400000);
+  while(state.log[dcur.toISOString().slice(0,10)]){ streak++; dcur=new Date(dcur.getTime()-86400000); }
+  $('s-streak').textContent=streak;
+
+  $('cnt-tracks').textContent=taskDone;
+  $('cnt-dsa').textContent=Object.keys(state.probs).length;
+}
+
+/* ---------- view ---------- */
+function setView(v){
+  ui.view=v; saveUI();
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  $('view-tracks').classList.toggle('hidden',v!=='tracks');
+  $('view-dsa').classList.toggle('hidden',v!=='dsa');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('.tab');
+  if(tab){ setView(tab.dataset.view); return; }
+
+  const th=e.target.closest('[data-track]');
+  if(th){
+    const id=th.dataset.track, card=$('card-'+id), open=card.classList.toggle('open');
+    th.setAttribute('aria-expanded',open);
+    ui.openTracks = open ? [...new Set([...ui.openTracks,id])] : ui.openTracks.filter(x=>x!==id);
+    saveUI(); return;
+  }
+
+  const tp=e.target.closest('[data-topic]');
+  if(tp){
+    const id=tp.dataset.topic, open=tp.parentElement.classList.toggle('open');
+    tp.setAttribute('aria-expanded',open);
+    ui.openTopics = open ? [...new Set([...ui.openTopics,id])] : ui.openTopics.filter(x=>x!==id);
+    saveUI(); return;
+  }
+
+  const tt=e.target.closest('[data-tracks-toggle]');
+  if(tt){ ui.openTracks = tt.dataset.tracksToggle==='1'?TRACKS.map(t=>t.id):[]; saveUI(); buildTracks(); updateStats(); return; }
+
+  const pt=e.target.closest('[data-topics-toggle]');
+  if(pt){ ui.openTopics = pt.dataset.topicsToggle==='1'?TOPICS.slice():[]; saveUI(); renderDSA(); return; }
+});
+
+document.addEventListener('change',e=>{
+  if(e.target.matches('[data-task]')) toggleTask(e.target.dataset.task);
+  else if(e.target.matches('[data-prob]')) toggleProb(+e.target.dataset.prob);
+});
+
+['f-topic','f-diff','f-status'].forEach(id=>$(id).addEventListener('change',renderDSA));
+$('clear-filters').addEventListener('click',()=>{
+  $('f-topic').value='all'; $('f-diff').value='all'; $('f-status').value='all';
+  $('q').value=''; query=''; renderDSA(); buildTracks(); updateStats();
+});
+
+let qT;
+$('q').addEventListener('input',e=>{
+  clearTimeout(qT);
+  qT=setTimeout(()=>{
+    query=e.target.value.trim().toLowerCase();
+    buildTracks(); renderDSA(); updateStats();
+  },120);
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='/'&&!/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)){
+    e.preventDefault(); $('q').focus(); $('q').select();
+  }
+  if(e.key==='Escape'&&document.activeElement===$('q')){
+    $('q').value=''; query=''; $('q').blur(); buildTracks(); renderDSA(); updateStats();
+  }
+  if((e.key==='1'||e.key==='2')&&!/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)){
+    setView(e.key==='1'?'tracks':'dsa');
+  }
+});
+
+const nav=$('navbar'), navTop=()=>nav.offsetTop;
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('stuck',window.scrollY>navTop()-1);
+  $('to-top').classList.toggle('show',window.scrollY>600);
+},{passive:true});
+$('to-top').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ---------- io ---------- */
+$('btn-export').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(state,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='prep-progress-'+today()+'.json'; a.click();
+  URL.revokeObjectURL(a.href); toast('Progress exported');
+});
+$('btn-import').addEventListener('click',()=>$('import-file').click());
+$('import-file').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const parsed=JSON.parse(r.result);
+      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{}};
+      save(); buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Progress imported');
+    }catch(e){ toast('That file could not be read as progress data.'); }
+  };
+  r.readAsText(f); ev.target.value='';
+});
+$('btn-reset').addEventListener('click',()=>{
+  if(confirm('Clear all checked tasks, problems, and streak history? Export first if unsure.')){
+    state={tasks:{},probs:{},log:{}}; save();
+    buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Everything cleared');
+  }
+});
+
+/* ---------- gist sync ---------- */
+const SYNCKEY='praveen-prep-sync-v1';
+const GIST_DESC='praveen-prep-tracker · progress sync (do not delete)';
+const GIST_FILE='prep-progress.json';
+let sync={token:'',gistId:''};
+try{const s=localStorage.getItem(SYNCKEY); if(s) sync=Object.assign(sync,JSON.parse(s));}catch(e){}
+const saveSync=()=>{try{localStorage.setItem(SYNCKEY,JSON.stringify(sync));}catch(e){}};
+const syncOn=()=>!!(sync.token&&sync.gistId);
+const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log});
+
+function setSync(kind,msg){
+  const s=$('sync-state'), b=$('sync-btn');
+  s.className='sync-state '+(kind||'');
+  $('sync-msg').textContent=msg;
+  b.className='icon-btn'+(kind?' s-'+kind:'');
+  b.title=msg;
+}
+async function gh(path,opts){
+  const r=await fetch('https://api.github.com'+path,Object.assign({
+    headers:{Authorization:'Bearer '+sync.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+  },opts||{}));
+  if(r.status===401) throw new Error('Token rejected — check it was copied in full and has not expired.');
+  if(r.status===403) throw new Error('Token lacks Gist read/write permission.');
+  if(r.status===404) throw new Error('Sync gist not found — it may have been deleted. Disconnect and reconnect.');
+  if(!r.ok) throw new Error('GitHub API error '+r.status);
+  return r.json();
+}
+
+let pushT, pulling=false;
+function schedulePush(){
+  if(!syncOn()||pulling) return;
+  setSync('busy','Saving…');
+  clearTimeout(pushT);
+  pushT=setTimeout(()=>{syncPush().catch(e=>setSync('err',e.message));},1200);
+}
+async function syncPush(){
+  if(!syncOn()) return;
+  setSync('busy','Saving…');
+  await gh('/gists/'+sync.gistId,{method:'PATCH',
+    body:JSON.stringify({files:{[GIST_FILE]:{content:JSON.stringify(payload(),null,1)}}})});
+  setSync('ok','Saved to your private gist · '+new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}));
+}
+async function syncPull(union){
+  if(!syncOn()) return;
+  pulling=true;
+  try{
+    setSync('busy','Checking for updates…');
+    const g=await gh('/gists/'+sync.gistId);
+    const f=g.files&&g.files[GIST_FILE];
+    let remote=null;
+    if(f){
+      const txt = f.truncated&&f.raw_url ? await (await fetch(f.raw_url)).text() : f.content;
+      try{remote=JSON.parse(txt);}catch(e){}
+    }
+    if(!remote){ pulling=false; await syncPush(); return; }
+
+    if(union){
+      // first connect on this device: keep everything from both sides
+      state.tasks=Object.assign({},remote.tasks||{},state.tasks);
+      state.probs=Object.assign({},remote.probs||{},state.probs);
+      const log=Object.assign({},remote.log||{});
+      for(const k in state.log) log[k]=Math.max(log[k]||0,state.log[k]);
+      state.log=log;
+      save(true); pulling=false; await syncPush();
+    }else if((remote.updatedAt||0)>(state.updatedAt||0)){
+      state={tasks:remote.tasks||{},probs:remote.probs||{},log:remote.log||{},updatedAt:remote.updatedAt||0};
+      try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+      pulling=false;
+      setSync('ok','Up to date — pulled newer progress from your other device');
+    }else if((state.updatedAt||0)>(remote.updatedAt||0)){
+      pulling=false; await syncPush();
+    }else{
+      pulling=false; setSync('ok','Up to date');
+    }
+    rerenderAll();
+  }finally{ pulling=false; }
+}
+function rerenderAll(){ buildTracks(); renderDSA(); renderFocus(); updateStats(); }
+
+async function syncConnect(token){
+  const btn=$('sync-connect'); btn.disabled=true;
+  try{
+    sync.token=token;
+    setSync('busy','Checking token…');
+    const list=await gh('/gists?per_page=100');
+    const found=list.find(x=>x.description===GIST_DESC);
+    if(found){
+      sync.gistId=found.id; saveSync();
+      await syncPull(true);
+      toast('Connected — progress merged');
+    }else{
+      setSync('busy','Creating private gist…');
+      const g=await gh('/gists',{method:'POST',body:JSON.stringify({
+        description:GIST_DESC,public:false,
+        files:{[GIST_FILE]:{content:JSON.stringify(payload(),null,1)}}
+      })});
+      sync.gistId=g.id; saveSync();
+      setSync('ok','Connected — private gist created');
+      toast('Sync switched on');
+    }
+    $('sync-token').value='';
+  }catch(e){
+    sync.token=''; sync.gistId=''; saveSync();
+    setSync('err',e.message);
+  }finally{ btn.disabled=false; }
+}
+
+$('sync-btn').addEventListener('click',()=>$('sync-overlay').classList.remove('hidden'));
+$('sync-close').addEventListener('click',()=>$('sync-overlay').classList.add('hidden'));
+$('sync-overlay').addEventListener('click',e=>{ if(e.target===$('sync-overlay')) $('sync-overlay').classList.add('hidden'); });
+$('sync-connect').addEventListener('click',()=>{
+  const t=$('sync-token').value.trim();
+  if(!t){ setSync('err','Paste a token first.'); return; }
+  syncConnect(t);
+});
+$('sync-token').addEventListener('keydown',e=>{ if(e.key==='Enter') $('sync-connect').click(); });
+$('sync-now').addEventListener('click',()=>{
+  if(!syncOn()){ setSync('err','Not connected yet.'); return; }
+  syncPull(false).catch(e=>setSync('err',e.message));
+});
+$('sync-off').addEventListener('click',()=>{
+  if(!confirm('Stop syncing on this device? Your progress stays here and in the gist — you just need the token again to reconnect.')) return;
+  sync={token:'',gistId:''}; saveSync();
+  setSync('','Not syncing — progress stays on this device only.');
+  toast('Sync disconnected');
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('sync-overlay').classList.add('hidden'); });
+window.addEventListener('online',()=>{ if(syncOn()) syncPull(false).catch(()=>{}); });
+
+/* ---------- boot ---------- */
+if(!Array.isArray(ui.openTopics)) ui.openTopics=[TOPICS[0]];
+applyTheme();
+buildRibbon();
+buildTracks();
+buildDSAFilters();
+renderDSA();
+renderFocus();
+updateStats();
+setView(ui.view);
+if(syncOn()) syncPull(false).catch(e=>setSync('err',e.message));
+
+</script>
+</body>
+</html>
