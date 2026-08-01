@@ -16,6 +16,16 @@ Everything is one `index.html` — no build step, no dependencies, no backend. O
 
 A DSA checkbox means *re-implemented cold from a blank file* — not "read and understood."
 
+## Notes
+
+Every track task and every problem takes a note — click the ☰ icon on the row. Notes accept light Markdown: `**bold**`, `` `code` ``, `- bullets`, and bare or `[titled](https://…)` links, which become clickable. They save as you type and sync with everything else.
+
+Once written, a note stays visible under its row, so scanning the list *is* the revision pass. Notes are also searchable — typing in `/` matches note text, which is what makes 176 rows navigable months later.
+
+**Export notes (.md)** dumps every note grouped by pattern into a single Markdown file you can read outside the tracker.
+
+The highest-value note on a problem isn't the resource link — it's the signal you missed: *"thought two pointers, was actually binary search on the answer; the tell was 'minimise the maximum'."* Links you can re-find. That sentence you can't.
+
 ## Syncing across devices
 
 Progress is kept in the browser's `localStorage`, so by default each device tracks separately.
