@@ -468,6 +468,53 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 .sync-state.busy .dot{background:var(--accent)}
 .sync-state.err .dot{background:var(--behind)}
 /* ============================================================
+   spaced review
+   ============================================================ */
+.due-card{
+  background:linear-gradient(150deg,color-mix(in srgb,var(--t3) 9%,transparent),transparent 55%),var(--surface);
+  border:1px solid var(--border);border-left:3px solid var(--t3);
+  border-radius:var(--r-md);padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow-1);
+}
+.due-card.clear{
+  background:linear-gradient(150deg,color-mix(in srgb,var(--dsa) 9%,transparent),transparent 55%),var(--surface);
+  border-left-color:var(--dsa);
+}
+.due-card .kicker{
+  display:block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t3);margin-bottom:4px;font-weight:600;
+}
+.due-card.clear .kicker{color:var(--dsa)}
+.due-lede{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px}
+.due-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px 0;border-top:1px solid var(--border);
+}
+.due-row a{color:var(--text);font-size:13.5px;flex:1;min-width:150px}
+.due-row a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.due-when{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 9px;
+  border-radius:var(--r-xs);white-space:nowrap;
+}
+.due-when.over{background:color-mix(in srgb,var(--t3) 15%,transparent);color:var(--t3)}
+.due-when.now{background:var(--accent-soft);color:var(--accent)}
+.due-rep{font-family:var(--font-mono);font-size:10.5px;color:var(--dim);white-space:nowrap}
+.rev-ok,.rev-bad{
+  font-size:12px;font-weight:600;border-radius:var(--r-xs);padding:6px 12px;
+  border:1px solid var(--border-2);color:var(--mid);transition:all var(--dur);white-space:nowrap;
+}
+.rev-ok:hover{background:color-mix(in srgb,var(--dsa) 15%,transparent);color:var(--dsa);border-color:transparent}
+.rev-bad:hover{background:color-mix(in srgb,var(--t3) 15%,transparent);color:var(--t3);border-color:transparent}
+.pname{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.revbadge{
+  font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:2px 7px;
+  border-radius:var(--r-xs);white-space:nowrap;flex:none;
+}
+.revbadge.over{background:color-mix(in srgb,var(--t3) 15%,transparent);color:var(--t3)}
+.revbadge.now{background:var(--accent-soft);color:var(--accent)}
+.revbadge.soon{background:var(--surface-3);color:var(--dim)}
+.revbadge.done{background:color-mix(in srgb,var(--dsa) 13%,transparent);color:var(--dsa)}
+
+/* ============================================================
    notes
    ============================================================ */
 .note-btn{
@@ -579,6 +626,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
     <div class="stat a-t1"><div class="lbl">Progress vs plan</div><div class="val" id="s-exp">–</div><div class="note" id="s-delta"></div></div>
     <div class="stat a-dsa"><div class="lbl">DSA solved</div><div class="val" id="s-dsa" style="color:var(--dsa)">0</div><div class="note" id="s-dsa-note">of 0 problems</div></div>
     <div class="stat a-accent"><div class="lbl">Streak</div><div class="val" id="s-streak">0</div><div class="note">days with ≥1 problem</div></div>
+    <div class="stat a-t2"><div class="lbl">Due for review</div><div class="val" id="s-due">0</div><div class="note" id="s-due-note">nothing scheduled yet</div></div>
   </div>
 
   <div class="overall">
@@ -631,6 +679,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 </div>
 
 <div id="view-dsa" class="hidden">
+  <div id="due-panel"></div>
   <div class="method">
     <span class="kicker">Per-problem loop · non-negotiable</span>
     <ol>
@@ -659,7 +708,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
     </select>
     <select id="f-topic" aria-label="Filter by topic"><option value="all">All topics</option></select>
     <select id="f-diff" aria-label="Filter by difficulty"><option value="all">All difficulty</option><option value="E">Easy</option><option value="M">Medium</option></select>
-    <select id="f-status" aria-label="Filter by status"><option value="all">All</option><option value="unsolved">Unsolved</option><option value="solved">Solved</option></select>
+    <select id="f-status" aria-label="Filter by status"><option value="all">All</option><option value="unsolved">Unsolved</option><option value="solved">Solved</option><option value="due">Due for review</option></select>
     <button class="small-btn" data-topics-toggle="1">Expand all</button>
     <button class="small-btn" data-topics-toggle="0">Collapse all</button>
     <button class="small-btn hidden" id="clear-filters">Clear filters</button>
@@ -807,7 +856,7 @@ const TRACKS = [
 /* ---------- state ---------- */
 const KEY='praveen-prep-v1';
 const UIKEY='praveen-prep-ui-v1';
-let state={tasks:{},probs:{},log:{},guess:{},notes:{}};
+let state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{}};
 try{const s=localStorage.getItem(KEY); if(s) state=Object.assign(state,JSON.parse(s));}catch(e){}
 let ui={theme:'dark',view:'tracks',openTracks:['dsa-concepts'],openTopics:null};
 try{const s=localStorage.getItem(UIKEY); if(s) ui=Object.assign(ui,JSON.parse(s));}catch(e){}
@@ -818,7 +867,47 @@ const save=(quiet)=>{
   if(!quiet) schedulePush();
 };
 const saveUI=()=>{try{localStorage.setItem(UIKEY,JSON.stringify(ui));}catch(e){}};
-const today=()=>new Date().toISOString().slice(0,10);
+/* local calendar date, not UTC — otherwise solving after midnight IST
+   logs against the previous day and review dates land wrong */
+const dstr=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const today=()=>dstr(new Date());
+const dparse=s=>new Date(s+'T00:00:00');
+const addDays=(s,n)=>dstr(new Date(dparse(s).getTime()+n*86400000));
+const daysUntil=s=>Math.round((dparse(s)-dparse(today()))/86400000);
+
+/* spaced review: intervals chain from the last completed rep, so being
+   late stretches the ladder instead of collapsing it */
+const REV_STEPS=[3,14,45];
+const revOf=id=>(state.rev||{})[id]||null;
+function revDue(id){
+  const r=revOf(id);
+  if(!r||!r.d||!state.probs[id]) return null;
+  return daysUntil(r.d);
+}
+const isDue=id=>{const n=revDue(id); return n!==null&&n<=0;};
+function scheduleSolve(id){
+  state.rev=state.rev||{};
+  if(state.rev[id]) return;                       // keep any existing ladder
+  state.rev[id]={s:today(),n:0,d:addDays(today(),REV_STEPS[0]),f:0};
+}
+function markReview(id,cold){
+  state.rev=state.rev||{};
+  const r=state.rev[id]; if(!r) return;
+  if(cold){
+    r.n=(r.n||0)+1;
+    r.d = r.n>=REV_STEPS.length ? null : addDays(today(),REV_STEPS[r.n]);
+  }else{
+    r.f=(r.f||0)+1;
+    r.d=addDays(today(),REV_STEPS[0]);            // struggled: back in 3 days, same rung
+  }
+  save();
+  renderDSA(); updateStats();
+}
+function dueList(){
+  return PROBLEMS.filter(p=>isDue(p.id))
+    .sort((a,b)=>revDue(a.id)-revDue(b.id));
+}
+const unscheduledSolved=()=>PROBLEMS.filter(p=>state.probs[p.id]&&!revOf(p.id)).length;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -1100,6 +1189,49 @@ function noteBlock(k,cls){
   return txt.trim() ? '<div class="'+cls+'"><div class="note-view">'+mdToHtml(txt)+'</div></div>' : '';
 }
 
+function revBadge(id){
+  const r=revOf(id);
+  if(!r||!state.probs[id]) return '';
+  if(!r.d) return '<span class="revbadge done" title="All 3 reviews done cold">✓ mastered</span>';
+  const n=daysUntil(r.d);
+  const rep='R'+((r.n||0)+1);
+  if(n<0)  return '<span class="revbadge over" title="Review overdue">'+rep+' · '+(-n)+'d overdue</span>';
+  if(n===0)return '<span class="revbadge now" title="Review due today">'+rep+' · due today</span>';
+  return '<span class="revbadge soon" title="Next review '+r.d+'">'+rep+' · in '+n+'d</span>';
+}
+function renderDue(){
+  const P=$('due-panel'); if(!P) return;
+  const due=dueList(), pending=unscheduledSolved();
+  let html='';
+  if(due.length){
+    html+='<div class="due-card"><span class="kicker">Due for review · '+due.length+'</span>'
+      +'<div class="due-lede">Re-solve from a blank file before starting anything new. '
+      +'<b>Solved cold</b> moves it down the ladder; <b>Struggled</b> brings it back in 3 days.</div>';
+    for(const p of due){
+      const n=revDue(p.id), r=revOf(p.id);
+      html+='<div class="due-row">'
+        +'<a href="'+p.u+'" target="_blank" rel="noopener">'+esc(p.n)+'</a>'
+        +'<span class="due-rep">'+esc(p.pg)+' · rep '+((r.n||0)+1)+' of 3'+((r.f||0)?' · struggled '+r.f+'×':'')+'</span>'
+        +'<span class="due-when '+(n<0?'over':'now')+'">'+(n<0?(-n)+'d overdue':'due today')+'</span>'
+        +'<button class="rev-ok" data-rev-ok="'+p.id+'">Solved cold</button>'
+        +'<button class="rev-bad" data-rev-bad="'+p.id+'">Struggled</button>'
+        +'</div>';
+    }
+    html+='</div>';
+  }else if(Object.keys(state.rev||{}).length){
+    html+='<div class="due-card clear"><span class="kicker">Review queue clear</span>'
+      +'<div class="due-lede" style="margin-bottom:0">Nothing due today. New solves come back in 3 days.</div></div>';
+  }
+  if(pending){
+    html+='<div class="due-card clear" style="border-left-color:var(--accent)">'
+      +'<span class="kicker" style="color:var(--accent)">Not on the review ladder</span>'
+      +'<div class="due-lede"><b>'+pending+'</b> problem'+(pending>1?'s were':' was')+' solved before review tracking existed, so '
+      +(pending>1?'they have':'it has')+' no solve date. Starting the ladder dates '+(pending>1?'them':'it')+' today — first review in 3 days.</div>'
+      +'<button class="small-btn primary" id="btn-backfill">Start review schedule for '+pending+' solved problem'+(pending>1?'s':'')+'</button></div>';
+  }
+  P.innerHTML=html;
+}
+
 function probRow(p,hidePattern){
   const d=!!state.probs[p.id], g=state.guess&&state.guess[p.id];
   const patCell = hidePattern
@@ -1108,7 +1240,7 @@ function probRow(p,hidePattern){
     : '<span class="pat">'+hl(p.pg)+'</span>';
   return '<div class="prob'+(d?' done':'')+'" data-prow="'+p.id+'">'
     +'<input class="chk chk-dsa" type="checkbox" data-prob="'+p.id+'"'+(d?' checked':'')+' aria-label="'+esc(p.n)+'">'
-    +'<a href="'+p.u+'" target="_blank" rel="noopener">'+hl(p.n)+'</a>'
+    +'<span class="pname"><a href="'+p.u+'" target="_blank" rel="noopener">'+hl(p.n)+'</a>'+revBadge(p.id)+'</span>'
     +patCell
     +'<span class="diff '+p.d+'">'+(p.d==='E'?'Easy':'Medium')+'</span>'
     +noteBtn('p:'+p.id)+'</div>'
@@ -1119,7 +1251,7 @@ function renderDSA(){
   $('clear-filters').classList.toggle('hidden',!filtersActive());
   const pass=p=> (ft==='all'||p.t===ft)
       && (fd==='all'||p.d===fd)
-      && (fs==='all'||(fs==='solved')===!!state.probs[p.id])
+      && (fs==='all'||(fs==='due'?isDue(p.id):(fs==='solved')===!!state.probs[p.id]))
       && (!query||matches(p.n.toLowerCase())||matches(p.pg.toLowerCase())||matches(p.t.toLowerCase())||matches(noteOf('p:'+p.id).toLowerCase()));
   let html='';
 
@@ -1132,7 +1264,7 @@ function renderDSA(){
       +'</div>';
     html+='<div class="topic-block open"><div class="topic-body">'+ps.map(p=>probRow(p,true)).join('')+'</div></div>';
     $('dsa-list').innerHTML = ps.length?html:'<div class="empty">Nothing matches these filters.</div>';
-    renderChips(); return;
+    renderChips(); renderDue(); return;
   }
 
   const keys = gm==='pattern' ? PATTERNS : TOPICS;
@@ -1153,7 +1285,7 @@ function renderDSA(){
       +'</div></div>';
   }
   $('dsa-list').innerHTML = html || '<div class="empty">Nothing matches these filters.</div>';
-  renderChips();
+  renderChips(); renderDue();
 }
 function renderChips(){
   const solved=Object.keys(state.probs).length;
@@ -1168,7 +1300,7 @@ function renderChips(){
 function toggleProb(id){
   const wasFiltered=$('f-status').value!=='all';
   if(state.probs[id]) delete state.probs[id];
-  else { state.probs[id]=1; state.log[today()]=(state.log[today()]||0)+1; }
+  else { state.probs[id]=1; state.log[today()]=(state.log[today()]||0)+1; scheduleSolve(id); }
   save();
   if(wasFiltered){ renderDSA(); }
   else{
@@ -1225,6 +1357,11 @@ function updateStats(){
   while(state.log[dcur.toISOString().slice(0,10)]){ streak++; dcur=new Date(dcur.getTime()-86400000); }
   $('s-streak').textContent=streak;
 
+  const due=dueList().length, sched=Object.keys(state.rev||{}).length;
+  $('s-due').textContent=due;
+  $('s-due').style.color = due ? 'var(--t3)' : 'var(--text)';
+  $('s-due-note').textContent = sched ? (due?'re-solve before new ones':sched+' on the ladder') : 'nothing scheduled yet';
+
   $('cnt-tracks').textContent=taskDone;
   $('cnt-dsa').textContent=Object.keys(state.probs).length;
 }
@@ -1275,6 +1412,19 @@ document.addEventListener('click',e=>{
   }
   const nc=e.target.closest('[data-noteclose]');
   if(nc){ clearTimeout(noteT); save(); openNotes.delete(nc.dataset.noteclose); refreshNotes(); return; }
+
+  const ok=e.target.closest('[data-rev-ok]');
+  if(ok){ markReview(+ok.dataset.revOk,true); return; }
+  const bad=e.target.closest('[data-rev-bad]');
+  if(bad){ markReview(+bad.dataset.revBad,false); return; }
+  if(e.target.closest('#btn-backfill')){
+    const n=unscheduledSolved();
+    if(!confirm('Put '+n+' already-solved problem'+(n>1?'s':'')+' on the review ladder, dated today?\n\nFirst review lands in 3 days. Nothing else changes.')) return;
+    state.rev=state.rev||{};
+    PROBLEMS.forEach(p=>{ if(state.probs[p.id]&&!state.rev[p.id]) scheduleSolve(p.id); });
+    save(); renderDSA(); updateStats(); toast(n+' problems scheduled — first review in 3 days');
+    return;
+  }
 
   const tt=e.target.closest('[data-tracks-toggle]');
   if(tt){ ui.openTracks = tt.dataset.tracksToggle==='1'?TRACKS.map(t=>t.id):[]; saveUI(); buildTracks(); updateStats(); return; }
@@ -1379,7 +1529,7 @@ $('import-file').addEventListener('change',ev=>{
   r.onload=()=>{
     try{
       const parsed=JSON.parse(r.result);
-      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{},guess:parsed.guess||{},notes:parsed.notes||{}};
+      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{},guess:parsed.guess||{},notes:parsed.notes||{},rev:parsed.rev||{}};
       save(); buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Progress imported');
     }catch(e){ toast('That file could not be read as progress data.'); }
   };
@@ -1387,7 +1537,7 @@ $('import-file').addEventListener('change',ev=>{
 });
 $('btn-reset').addEventListener('click',()=>{
   if(confirm('Clear all checked tasks, problems, and streak history? Export first if unsure.')){
-    state={tasks:{},probs:{},log:{},guess:{},notes:{}}; save();
+    state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{}}; save();
     buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Everything cleared');
   }
 });
@@ -1400,7 +1550,7 @@ let sync={token:'',gistId:''};
 try{const s=localStorage.getItem(SYNCKEY); if(s) sync=Object.assign(sync,JSON.parse(s));}catch(e){}
 const saveSync=()=>{try{localStorage.setItem(SYNCKEY,JSON.stringify(sync));}catch(e){}};
 const syncOn=()=>!!(sync.token&&sync.gistId);
-const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log,guess:state.guess||{},notes:state.notes||{}});
+const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log,guess:state.guess||{},notes:state.notes||{},rev:state.rev||{}});
 
 function setSync(kind,msg){
   const s=$('sync-state'), b=$('sync-btn');
@@ -1454,12 +1604,15 @@ async function syncPull(union){
       state.probs=Object.assign({},remote.probs||{},state.probs);
       state.guess=Object.assign({},remote.guess||{},state.guess||{});
       state.notes=Object.assign({},remote.notes||{},state.notes||{});
+      state.rev=Object.assign({},remote.rev||{},state.rev||{});
       const log=Object.assign({},remote.log||{});
       for(const k in state.log) log[k]=Math.max(log[k]||0,state.log[k]);
       state.log=log;
       save(true); pulling=false; await syncPush();
     }else if((remote.updatedAt||0)>(state.updatedAt||0)){
-      state={tasks:remote.tasks||{},probs:remote.probs||{},log:remote.log||{},guess:remote.guess||{},notes:remote.notes||{},updatedAt:remote.updatedAt||0};
+      const take=(k)=>remote[k]!==undefined?remote[k]:(state[k]||{});
+      state={tasks:take('tasks'),probs:take('probs'),log:take('log'),guess:take('guess'),
+             notes:take('notes'),rev:take('rev'),updatedAt:remote.updatedAt||0};
       try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
       pulling=false;
       setSync('ok','Up to date — pulled newer progress from your other device');

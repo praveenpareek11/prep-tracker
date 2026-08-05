@@ -14,6 +14,19 @@ Everything is one `index.html` — no build step, no dependencies, no backend. O
 
 A DSA checkbox means *re-implemented cold from a blank file* — not "read and understood."
 
+## Spaced review
+
+Ticking a problem puts it on a review ladder: **3 days → 14 days → 45 days**. Intervals chain from your last completed rep, so being late stretches the schedule rather than collapsing it.
+
+Anything due appears in a **Due for review** panel at the top of the DSA tab, worst-overdue first, with a count in the header stats. Re-solve from a blank file, then:
+
+- **Solved cold** — advance to the next interval. After the third rep the problem retires as *mastered*.
+- **Struggled** — back in 3 days, staying on the same rung. It only advances once you clear it cleanly.
+
+Each row also carries a small badge (`R2 · in 5d`, `R1 · 3d overdue`, `✓ mastered`), and the status filter has a **Due for review** option.
+
+Problems ticked before this existed have no recorded solve date, so they stay off the ladder until you use the one-time **Start review schedule** button, which dates them today.
+
 ## Notes
 
 Every track task and every problem takes a note — click the ☰ icon on the row. Notes accept light Markdown: `**bold**`, `` `code` ``, `- bullets`, and bare or `[titled](https://…)` links, which become clickable. They save as you type and sync with everything else.
