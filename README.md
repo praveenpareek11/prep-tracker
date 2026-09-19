@@ -14,6 +14,20 @@ Everything is one `index.html` — no build step, no dependencies, no backend. O
 
 A DSA checkbox means *re-implemented cold from a blank file* — not "read and understood."
 
+## Plan dates
+
+The plan start lives in synced state, not in the source. **Plan dates** (footer) shifts the whole schedule — every week boundary, the apply-ready date and the focus card move together — so a break gets absorbed instead of pretending the missing weeks were worked. Same sheet sets the DSA runway end and toggles the review ladder between `3d · 14d · 45d` and `3d · 14d`.
+
+Current plan: starts **Aug 31 2026**, application-ready **Dec 14 2026**.
+
+## Two separate bars
+
+**Application readiness** is T0–T6 only. **DSA** is scored separately on its own runway, because conflating them is what produced a misleading "40% behind" when the real picture was a calendar that had drifted.
+
+On the DSA bar the marker is the *target* pace from the runway end — the line that can be missed. Beneath it, a projection computed from observed throughput: hours/week actually logged, priced at ~50 min for a cold solve and ~18 for a re-solve, against the hours still owed. If the projection disagrees with the target, that gap is the point; move the rate or move the date, but don't hide it.
+
+Pattern coverage (`N/22`) is reported as information. It is deliberately **not** a readiness gate — block-level breadth-first can't touch all 22 patterns by December, and a gate you can't meet is just noise.
+
 ## Spaced review
 
 Ticking a problem puts it on a review ladder: **3 days → 14 days → 45 days**. Intervals chain from your last completed rep, so being late stretches the schedule rather than collapsing it.
@@ -26,6 +40,14 @@ Anything due appears in a **Due for review** panel at the top of the DSA tab, wo
 Each row also carries a small badge (`R2 · in 5d`, `R1 · 3d overdue`, `✓ mastered`), and the status filter has a **Due for review** option.
 
 Problems ticked before this existed have no recorded solve date, so they stay off the ladder until you use the one-time **Start review schedule** button, which dates them today.
+
+After a long gap the 3/14/45 spacing stops meaning anything — everything is a cold re-solve. When the queue is badly overdue the due panel offers **Rebase overdue reviews**: each drops to rung 1 and is spread 2/day, hardest first (flagged struggles, then misidentified patterns, then the rest). Solve dates and struggle counts are kept.
+
+## Choosing what to solve next
+
+**Group: Coverage — breadth-first** orders pattern blocks by what's least covered, but stays inside a block until ~3 problems are done before opening the next — fluency needs consecutive reps, so it never rotates per problem.
+
+Concept units have no calendar window. Each one is surfaced just-in-time, immediately before the first problem of the block it unlocks, and the focus card leads with it when the next block is gated shut.
 
 ## Notes
 

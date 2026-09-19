@@ -612,7 +612,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
     <div>
       <div class="eyebrow">Interview Prep · Command Center</div>
       <h1>Roadmap, <span>Scheduled.</span></h1>
-      <p class="sub">Start <b>Aug 3, 2026</b> → application-ready <b>Nov 16, 2026</b>. DSA runs daily throughout; everything else is compressible and slots around it. Progress saves as you go — tap ☁ to sync it across your devices.</p>
+      <p class="sub">Start <b id="sub-start">–</b> → application-ready <b id="sub-ready">–</b>. Readiness is T0–T6; DSA runs daily on its own runway past that date and is scored separately. Progress saves as you go — tap ☁ to sync it across your devices.</p>
     </div>
     <div class="head-actions">
       <button class="icon-btn" id="sync-btn" title="Sync across devices" aria-label="Sync across devices">☁</button>
@@ -622,8 +622,8 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 
   <div class="statbar">
     <div class="stat a-accent"><div class="lbl">Today</div><div class="val" id="s-week">–</div><div class="note" id="s-date"></div></div>
-    <div class="stat a-t2"><div class="lbl">Days to apply-ready</div><div class="val" id="s-days">–</div><div class="note">Nov 16, 2026</div></div>
-    <div class="stat a-t1"><div class="lbl">Progress vs plan</div><div class="val" id="s-exp">–</div><div class="note" id="s-delta"></div></div>
+    <div class="stat a-t2"><div class="lbl">Days to apply-ready</div><div class="val" id="s-days">–</div><div class="note" id="s-days-note">–</div></div>
+    <div class="stat a-t1"><div class="lbl">Readiness vs plan</div><div class="val" id="s-exp">–</div><div class="note" id="s-delta"></div></div>
     <div class="stat a-dsa"><div class="lbl">DSA solved</div><div class="val" id="s-dsa" style="color:var(--dsa)">0</div><div class="note" id="s-dsa-note">of 0 problems</div></div>
     <div class="stat a-accent"><div class="lbl">Streak</div><div class="val" id="s-streak">0</div><div class="note">days with ≥1 problem</div></div>
     <div class="stat a-t2"><div class="lbl">Due for review</div><div class="val" id="s-due">0</div><div class="note" id="s-due-note">nothing scheduled yet</div></div>
@@ -631,10 +631,19 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 
   <div class="overall">
     <div class="overall-top">
-      <span class="t">Overall completion</span>
+      <span class="t">Application readiness <span class="thin" style="color:var(--dim);font-weight:400">T0–T6</span></span>
       <span class="m" id="ov-meta">–</span>
     </div>
     <div class="track-line"><div class="fill" id="ov-fill" style="width:0%"></div><div class="mark" id="ov-mark" style="left:0%"></div></div>
+  </div>
+
+  <div class="overall" style="margin-top:10px">
+    <div class="overall-top">
+      <span class="t">DSA <span class="thin" style="color:var(--dim);font-weight:400">own runway, not part of readiness</span></span>
+      <span class="m" id="dsa-meta">–</span>
+    </div>
+    <div class="track-line"><div class="fill" id="dsa-fill" style="width:0%;background:linear-gradient(90deg,var(--dsa),var(--t1))"></div><div class="mark" id="dsa-mark" style="left:0%"></div></div>
+    <div class="m" id="dsa-proj" style="margin-top:9px;font-size:12px;color:var(--dim)">–</div>
   </div>
 </header>
 
@@ -703,6 +712,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
   <div class="toolbar">
     <select id="f-group" aria-label="Group problems by">
       <option value="pattern">Group: Pattern</option>
+      <option value="coverage">Group: Coverage — breadth-first</option>
       <option value="topic">Group: Topic</option>
       <option value="mixed">Mixed — pattern hidden</option>
     </select>
@@ -720,6 +730,7 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 
 <div class="io-row">
   <span class="io-note">Saved in this browser only — export a backup before clearing site data.</span>
+  <button class="small-btn" id="btn-plan">Plan dates</button>
   <button class="small-btn" id="btn-notes">Export notes (.md)</button>
   <button class="small-btn" id="btn-export">Export progress</button>
   <button class="small-btn" id="btn-import">Import progress</button>
@@ -727,6 +738,40 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
   <button class="small-btn danger" id="btn-reset">Reset all</button>
 </div>
 
+</div>
+
+<div class="overlay hidden" id="plan-overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="plan-h">
+    <h2 id="plan-h">Plan dates</h2>
+    <p class="lede">Life happens. Shift the whole plan instead of pretending the missing weeks were worked — every week boundary, the ready date and the focus card move together.</p>
+
+    <label for="plan-start">Plan start</label>
+    <input type="date" id="plan-start">
+    <div class="sheet-row" style="margin-top:10px">
+      <button class="small-btn" data-shift="-7">−1 week</button>
+      <button class="small-btn" data-shift="7">+1 week</button>
+      <button class="small-btn" data-shift="14">+2 weeks</button>
+      <button class="small-btn" data-shift="28">+4 weeks</button>
+    </div>
+    <div class="warn" id="plan-preview" style="margin-top:14px">–</div>
+
+    <label for="plan-dsaend" style="margin-top:18px">DSA runway end <span style="font-weight:400;color:var(--dim)">— the target the DSA bar is scored against</span></label>
+    <input type="date" id="plan-dsaend">
+
+    <label style="margin-top:18px">Review ladder</label>
+    <div class="sheet-row" style="margin-top:0">
+      <button class="small-btn" data-steps="3,14,45">3d · 14d · 45d</button>
+      <button class="small-btn" data-steps="3,14">3d · 14d only</button>
+      <span class="note-hint" id="plan-steps">–</span>
+    </div>
+    <div class="warn" style="margin-top:10px">Dropping the 45-day step buys roughly 20% DSA throughput. Shortening retires anything already past the new last rung on its next review; lengthening does <b>not</b> re-open problems already retired.</div>
+
+    <div class="sheet-row">
+      <button class="btn" id="plan-apply">Apply</button>
+      <div class="toolbar-spacer"></div>
+      <button class="small-btn" id="plan-close">Close</button>
+    </div>
+  </div>
 </div>
 
 <div class="overlay hidden" id="sync-overlay">
@@ -759,14 +804,30 @@ mark{background:var(--accent-soft);color:var(--accent);border-radius:3px;padding
 const PROBLEMS = [{"id":0,"t":"Arrays & Strings","p":"Array Basics","n":"Contains Duplicate","d":"E","u":"https://leetcode.com/problems/contains-duplicate/"},{"id":1,"t":"Arrays & Strings","p":"Array Basics","n":"Concatenation of Array","d":"E","u":"https://leetcode.com/problems/concatenation-of-array/"},{"id":2,"t":"Arrays & Strings","p":"Array Basics","n":"Replace Elements with Greatest Element on Right Side","d":"E","u":"https://leetcode.com/problems/replace-elements-with-greatest-element-on-right-side/"},{"id":3,"t":"Arrays & Strings","p":"Array Basics","n":"Is Subsequence","d":"E","u":"https://leetcode.com/problems/is-subsequence/"},{"id":4,"t":"Arrays & Strings","p":"Array Basics","n":"Length of Last Word","d":"E","u":"https://leetcode.com/problems/length-of-last-word/"},{"id":5,"t":"Arrays & Strings","p":"Array Basics","n":"Majority Element","d":"E","u":"https://leetcode.com/problems/majority-element/"},{"id":6,"t":"Arrays & Strings","p":"Prefix Sum","n":"Find Pivot Index","d":"E","u":"https://leetcode.com/problems/find-pivot-index/"},{"id":7,"t":"Arrays & Strings","p":"Prefix Sum","n":"Range Sum Query - Immutable","d":"E","u":"https://leetcode.com/problems/range-sum-query-immutable/"},{"id":8,"t":"Arrays & Strings","p":"Array Basics","n":"Best Time to Buy and Sell Stock","d":"E","u":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},{"id":9,"t":"Arrays & Strings","p":"String Basics","n":"Valid Anagram","d":"E","u":"https://leetcode.com/problems/valid-anagram/"},{"id":10,"t":"Arrays & Strings","p":"String Basics","n":"Valid Palindrome","d":"E","u":"https://leetcode.com/problems/valid-palindrome/"},{"id":11,"t":"Arrays & Strings","p":"String Basics","n":"Reverse String","d":"E","u":"https://leetcode.com/problems/reverse-string/"},{"id":12,"t":"Arrays & Strings","p":"String Basics","n":"Longest Common Prefix","d":"E","u":"https://leetcode.com/problems/longest-common-prefix/"},{"id":13,"t":"Arrays & Strings","p":"String Basics","n":"Ransom Note","d":"E","u":"https://leetcode.com/problems/ransom-note/"},{"id":14,"t":"Arrays & Strings","p":"String Basics","n":"Isomorphic Strings","d":"E","u":"https://leetcode.com/problems/isomorphic-strings/"},{"id":15,"t":"Arrays & Strings","p":"String Basics","n":"Word Pattern","d":"E","u":"https://leetcode.com/problems/word-pattern/"},{"id":16,"t":"Arrays & Strings","p":"Array Basics","n":"Merge Sorted Array","d":"E","u":"https://leetcode.com/problems/merge-sorted-array/"},{"id":17,"t":"Arrays & Strings","p":"Array Basics","n":"Remove Duplicates from Sorted Array","d":"E","u":"https://leetcode.com/problems/remove-duplicates-from-sorted-array/"},{"id":18,"t":"Arrays & Strings","p":"Array Basics","n":"Remove Element","d":"E","u":"https://leetcode.com/problems/remove-element/"},{"id":19,"t":"Arrays & Strings","p":"Array Basics","n":"Majority Element II","d":"M","u":"https://leetcode.com/problems/majority-element-ii/"},{"id":20,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Two Sum","d":"E","u":"https://leetcode.com/problems/two-sum/"},{"id":21,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Design HashMap","d":"E","u":"https://leetcode.com/problems/design-hashmap/"},{"id":22,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Design HashSet","d":"E","u":"https://leetcode.com/problems/design-hashset/"},{"id":23,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"First Unique Character in a String","d":"E","u":"https://leetcode.com/problems/first-unique-character-in-a-string/"},{"id":24,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Contains Duplicate II","d":"E","u":"https://leetcode.com/problems/contains-duplicate-ii/"},{"id":25,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Isomorphic Strings","d":"E","u":"https://leetcode.com/problems/isomorphic-strings/"},{"id":26,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Word Pattern","d":"E","u":"https://leetcode.com/problems/word-pattern/"},{"id":27,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Longest Consecutive Sequence","d":"M","u":"https://leetcode.com/problems/longest-consecutive-sequence/"},{"id":28,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Top K Frequent Elements","d":"M","u":"https://leetcode.com/problems/top-k-frequent-elements/"},{"id":29,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Encode and Decode Strings","d":"M","u":"https://leetcode.com/problems/encode-and-decode-strings/"},{"id":30,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Subarray Sum Equals K","d":"M","u":"https://leetcode.com/problems/subarray-sum-equals-k/"},{"id":31,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"4Sum II","d":"M","u":"https://leetcode.com/problems/4sum-ii/"},{"id":32,"t":"Hashing (HashMap / HashSet)","p":"Hashing","n":"Insert Delete GetRandom O(1)","d":"M","u":"https://leetcode.com/problems/insert-delete-getrandom-o1/"},{"id":33,"t":"Two Pointers","p":"Two Pointers","n":"Valid Palindrome","d":"E","u":"https://leetcode.com/problems/valid-palindrome/"},{"id":34,"t":"Two Pointers","p":"Two Pointers","n":"Move Zeroes","d":"E","u":"https://leetcode.com/problems/move-zeroes/"},{"id":35,"t":"Two Pointers","p":"Two Pointers","n":"Squares of a Sorted Array","d":"E","u":"https://leetcode.com/problems/squares-of-a-sorted-array/"},{"id":36,"t":"Two Pointers","p":"Two Pointers","n":"Backspace String Compare","d":"E","u":"https://leetcode.com/problems/backspace-string-compare/"},{"id":37,"t":"Two Pointers","p":"Two Pointers","n":"Merge Sorted Array","d":"E","u":"https://leetcode.com/problems/merge-sorted-array/"},{"id":38,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Linked List Cycle","d":"E","u":"https://leetcode.com/problems/linked-list-cycle/"},{"id":39,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Happy Number","d":"E","u":"https://leetcode.com/problems/happy-number/"},{"id":40,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Middle of the Linked List","d":"E","u":"https://leetcode.com/problems/middle-of-the-linked-list/"},{"id":41,"t":"Two Pointers","p":"Fast & Slow Pointers","n":"Palindrome Linked List","d":"E","u":"https://leetcode.com/problems/palindrome-linked-list/"},{"id":42,"t":"Two Pointers","p":"Two Pointers","n":"Two Sum II - Input Array Is Sorted","d":"M","u":"https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/"},{"id":43,"t":"Two Pointers","p":"Two Pointers","n":"3Sum","d":"M","u":"https://leetcode.com/problems/3sum/"},{"id":44,"t":"Sliding Window","p":"Sliding Window","n":"Best Time to Buy and Sell Stock","d":"E","u":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},{"id":45,"t":"Sliding Window","p":"Sliding Window","n":"Longest Substring Without Repeating Characters","d":"M","u":"https://leetcode.com/problems/longest-substring-without-repeating-characters/"},{"id":46,"t":"Sliding Window","p":"Sliding Window","n":"Longest Repeating Character Replacement","d":"M","u":"https://leetcode.com/problems/longest-repeating-character-replacement/"},{"id":47,"t":"Sliding Window","p":"Sliding Window","n":"Permutation in String","d":"M","u":"https://leetcode.com/problems/permutation-in-string/"},{"id":48,"t":"Sliding Window","p":"Sliding Window","n":"Find All Anagrams in a String","d":"M","u":"https://leetcode.com/problems/find-all-anagrams-in-a-string/"},{"id":49,"t":"Sliding Window","p":"Sliding Window","n":"Fruit Into Baskets","d":"M","u":"https://leetcode.com/problems/fruit-into-baskets/"},{"id":50,"t":"Sliding Window","p":"Sliding Window","n":"Max Consecutive Ones III","d":"M","u":"https://leetcode.com/problems/max-consecutive-ones-iii/"},{"id":51,"t":"Sliding Window","p":"Sliding Window","n":"Minimum Size Subarray Sum","d":"M","u":"https://leetcode.com/problems/minimum-size-subarray-sum/"},{"id":52,"t":"Sliding Window","p":"Sliding Window","n":"Longest Substring with At Most K Distinct Characters","d":"M","u":"https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/"},{"id":53,"t":"Stacks & Queues","p":"Stack","n":"Valid Parentheses","d":"E","u":"https://leetcode.com/problems/valid-parentheses/"},{"id":54,"t":"Stacks & Queues","p":"Stack","n":"Baseball Game","d":"E","u":"https://leetcode.com/problems/baseball-game/"},{"id":55,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Next Greater Element I","d":"E","u":"https://leetcode.com/problems/next-greater-element-i/"},{"id":56,"t":"Stacks & Queues","p":"Queue","n":"Implement Queue using Stacks","d":"E","u":"https://leetcode.com/problems/implement-queue-using-stacks/"},{"id":57,"t":"Stacks & Queues","p":"Queue","n":"Implement Stack using Queues","d":"E","u":"https://leetcode.com/problems/implement-stack-using-queues/"},{"id":58,"t":"Stacks & Queues","p":"Stack","n":"Min Stack","d":"M","u":"https://leetcode.com/problems/min-stack/"},{"id":59,"t":"Stacks & Queues","p":"Stack","n":"Evaluate Reverse Polish Notation","d":"M","u":"https://leetcode.com/problems/evaluate-reverse-polish-notation/"},{"id":60,"t":"Stacks & Queues","p":"Stack","n":"Generate Parentheses","d":"M","u":"https://leetcode.com/problems/generate-parentheses/"},{"id":61,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Daily Temperatures","d":"M","u":"https://leetcode.com/problems/daily-temperatures/"},{"id":62,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Next Greater Element II","d":"M","u":"https://leetcode.com/problems/next-greater-element-ii/"},{"id":63,"t":"Stacks & Queues","p":"Monotonic Stack","n":"Online Stock Span","d":"M","u":"https://leetcode.com/problems/online-stock-span/"},{"id":64,"t":"Sorting & Binary Search","p":"Binary Search","n":"Binary Search","d":"E","u":"https://leetcode.com/problems/binary-search/"},{"id":65,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search Insert Position","d":"E","u":"https://leetcode.com/problems/search-insert-position/"},{"id":66,"t":"Sorting & Binary Search","p":"Sorting","n":"Merge Sort (implement)","d":"M","u":"https://www.geeksforgeeks.org/merge-sort/"},{"id":67,"t":"Sorting & Binary Search","p":"Sorting","n":"Quick Sort (implement)","d":"M","u":"https://www.geeksforgeeks.org/quick-sort-algorithm/"},{"id":68,"t":"Sorting & Binary Search","p":"Sorting","n":"Sort an Array","d":"M","u":"https://leetcode.com/problems/sort-an-array/"},{"id":69,"t":"Sorting & Binary Search","p":"Sorting","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":70,"t":"Sorting & Binary Search","p":"Sorting","n":"Largest Number","d":"M","u":"https://leetcode.com/problems/largest-number/"},{"id":71,"t":"Sorting & Binary Search","p":"Sorting","n":"Sort Colors","d":"M","u":"https://leetcode.com/problems/sort-colors/"},{"id":72,"t":"Sorting & Binary Search","p":"Sorting","n":"Kth Largest Element in an Array","d":"M","u":"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{"id":73,"t":"Sorting & Binary Search","p":"Binary Search","n":"Find First and Last Position of Element in Sorted Array","d":"M","u":"https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/"},{"id":74,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search in Rotated Sorted Array","d":"M","u":"https://leetcode.com/problems/search-in-rotated-sorted-array/"},{"id":75,"t":"Sorting & Binary Search","p":"Binary Search","n":"Search in Rotated Sorted Array II","d":"M","u":"https://leetcode.com/problems/search-in-rotated-sorted-array-ii/"},{"id":76,"t":"Sorting & Binary Search","p":"Binary Search","n":"Find Minimum in Rotated Sorted Array","d":"M","u":"https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/"},{"id":77,"t":"Linked List","p":"Linked List","n":"Reverse Linked List","d":"E","u":"https://leetcode.com/problems/reverse-linked-list/"},{"id":78,"t":"Linked List","p":"Linked List","n":"Merge Two Sorted Lists","d":"E","u":"https://leetcode.com/problems/merge-two-sorted-lists/"},{"id":79,"t":"Linked List","p":"Linked List","n":"Linked List Cycle","d":"E","u":"https://leetcode.com/problems/linked-list-cycle/"},{"id":80,"t":"Linked List","p":"Linked List","n":"Palindrome Linked List","d":"E","u":"https://leetcode.com/problems/palindrome-linked-list/"},{"id":81,"t":"Linked List","p":"Linked List","n":"Intersection of Two Linked Lists","d":"E","u":"https://leetcode.com/problems/intersection-of-two-linked-lists/"},{"id":82,"t":"Linked List","p":"Linked List","n":"Remove Duplicates from Sorted List","d":"E","u":"https://leetcode.com/problems/remove-duplicates-from-sorted-list/"},{"id":83,"t":"Linked List","p":"Linked List","n":"Reverse Linked List II","d":"M","u":"https://leetcode.com/problems/reverse-linked-list-ii/"},{"id":84,"t":"Linked List","p":"Linked List","n":"Remove Nth Node From End of List","d":"M","u":"https://leetcode.com/problems/remove-nth-node-from-end-of-list/"},{"id":85,"t":"Linked List","p":"Linked List","n":"Reorder List","d":"M","u":"https://leetcode.com/problems/reorder-list/"},{"id":86,"t":"Linked List","p":"Linked List","n":"Linked List Cycle II","d":"M","u":"https://leetcode.com/problems/linked-list-cycle-ii/"},{"id":87,"t":"Linked List","p":"Linked List","n":"Copy List with Random Pointer","d":"M","u":"https://leetcode.com/problems/copy-list-with-random-pointer/"},{"id":88,"t":"Linked List","p":"Linked List","n":"Add Two Numbers","d":"M","u":"https://leetcode.com/problems/add-two-numbers/"},{"id":89,"t":"Linked List","p":"Linked List","n":"Add Two Numbers II","d":"M","u":"https://leetcode.com/problems/add-two-numbers-ii/"},{"id":90,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Maximum Depth of Binary Tree","d":"E","u":"https://leetcode.com/problems/maximum-depth-of-binary-tree/"},{"id":91,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Same Tree","d":"E","u":"https://leetcode.com/problems/same-tree/"},{"id":92,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Invert Binary Tree","d":"E","u":"https://leetcode.com/problems/invert-binary-tree/"},{"id":93,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Subtree of Another Tree","d":"E","u":"https://leetcode.com/problems/subtree-of-another-tree/"},{"id":94,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Diameter of Binary Tree","d":"E","u":"https://leetcode.com/problems/diameter-of-binary-tree/"},{"id":95,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Balanced Binary Tree","d":"E","u":"https://leetcode.com/problems/balanced-binary-tree/"},{"id":96,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Path Sum","d":"E","u":"https://leetcode.com/problems/path-sum/"},{"id":97,"t":"Trees (Binary Tree / BST)","p":"Tree BFS","n":"Average of Levels in Binary Tree","d":"E","u":"https://leetcode.com/problems/average-of-levels-in-binary-tree/"},{"id":98,"t":"Trees (Binary Tree / BST)","p":"Tree BFS","n":"Minimum Depth of Binary Tree","d":"E","u":"https://leetcode.com/problems/minimum-depth-of-binary-tree/"},{"id":99,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Inorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-inorder-traversal/"},{"id":100,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Preorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-preorder-traversal/"},{"id":101,"t":"Trees (Binary Tree / BST)","p":"Traversal","n":"Binary Tree Postorder Traversal","d":"E","u":"https://leetcode.com/problems/binary-tree-postorder-traversal/"},{"id":102,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Binary Tree Paths","d":"E","u":"https://leetcode.com/problems/binary-tree-paths/"},{"id":103,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Symmetric Tree","d":"E","u":"https://leetcode.com/problems/symmetric-tree/"},{"id":104,"t":"Trees (Binary Tree / BST)","p":"Tree","n":"Convert Sorted Array to Binary Search Tree","d":"E","u":"https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/"},{"id":105,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Path Sum II","d":"M","u":"https://leetcode.com/problems/path-sum-ii/"},{"id":106,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Sum Root to Leaf Numbers","d":"M","u":"https://leetcode.com/problems/sum-root-to-leaf-numbers/"},{"id":107,"t":"Trees (Binary Tree / BST)","p":"Tree DFS","n":"Flatten Binary Tree to Linked List","d":"M","u":"https://leetcode.com/problems/flatten-binary-tree-to-linked-list/"},{"id":108,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Kth Largest Element in a Stream","d":"E","u":"https://leetcode.com/problems/kth-largest-element-in-a-stream/"},{"id":109,"t":"Heap / Priority Queue","p":"Heap","n":"Last Stone Weight","d":"E","u":"https://leetcode.com/problems/last-stone-weight/"},{"id":110,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Kth Largest Element in an Array","d":"M","u":"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{"id":111,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Top K Frequent Elements","d":"M","u":"https://leetcode.com/problems/top-k-frequent-elements/"},{"id":112,"t":"Heap / Priority Queue","p":"Top K Elements","n":"Top K Frequent Words","d":"M","u":"https://leetcode.com/problems/top-k-frequent-words/"},{"id":113,"t":"Heap / Priority Queue","p":"Top K Elements","n":"K Closest Points to Origin","d":"M","u":"https://leetcode.com/problems/k-closest-points-to-origin/"},{"id":114,"t":"Heap / Priority Queue","p":"K-way Merge","n":"Kth Smallest Element in a Sorted Matrix","d":"M","u":"https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/"},{"id":115,"t":"Heap / Priority Queue","p":"Heap","n":"Task Scheduler","d":"M","u":"https://leetcode.com/problems/task-scheduler/"},{"id":116,"t":"Recursion & Backtracking","p":"Recursion","n":"Climbing Stairs","d":"E","u":"https://leetcode.com/problems/climbing-stairs/"},{"id":117,"t":"Recursion & Backtracking","p":"Subsets Pattern","n":"Subsets","d":"M","u":"https://leetcode.com/problems/subsets/"},{"id":118,"t":"Recursion & Backtracking","p":"Subsets Pattern","n":"Subsets II","d":"M","u":"https://leetcode.com/problems/subsets-ii/"},{"id":119,"t":"Recursion & Backtracking","p":"Backtracking","n":"Permutations","d":"M","u":"https://leetcode.com/problems/permutations/"},{"id":120,"t":"Recursion & Backtracking","p":"Backtracking","n":"Permutations II","d":"M","u":"https://leetcode.com/problems/permutations-ii/"},{"id":121,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combinations","d":"M","u":"https://leetcode.com/problems/combinations/"},{"id":122,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum","d":"M","u":"https://leetcode.com/problems/combination-sum/"},{"id":123,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum II","d":"M","u":"https://leetcode.com/problems/combination-sum-ii/"},{"id":124,"t":"Recursion & Backtracking","p":"Backtracking","n":"Combination Sum III","d":"M","u":"https://leetcode.com/problems/combination-sum-iii/"},{"id":125,"t":"Recursion & Backtracking","p":"Backtracking","n":"Word Search","d":"M","u":"https://leetcode.com/problems/word-search/"},{"id":126,"t":"Graphs","p":"Graph DFS/BFS","n":"Flood Fill","d":"E","u":"https://leetcode.com/problems/flood-fill/"},{"id":127,"t":"Graphs","p":"Graph DFS/BFS","n":"Number of Islands","d":"M","u":"https://leetcode.com/problems/number-of-islands/"},{"id":128,"t":"Graphs","p":"Graph DFS/BFS","n":"Max Area of Island","d":"M","u":"https://leetcode.com/problems/max-area-of-island/"},{"id":129,"t":"Graphs","p":"Graph DFS/BFS","n":"Clone Graph","d":"M","u":"https://leetcode.com/problems/clone-graph/"},{"id":130,"t":"Graphs","p":"Graph DFS/BFS","n":"Islands and Treasure (Walls and Gates)","d":"M","u":"https://leetcode.com/problems/walls-and-gates/"},{"id":131,"t":"Graphs","p":"Graph DFS/BFS","n":"Rotting Oranges","d":"M","u":"https://leetcode.com/problems/rotting-oranges/"},{"id":132,"t":"Graphs","p":"Graph DFS/BFS","n":"Pacific Atlantic Water Flow","d":"M","u":"https://leetcode.com/problems/pacific-atlantic-water-flow/"},{"id":133,"t":"Graphs","p":"Graph DFS/BFS","n":"Surrounded Regions","d":"M","u":"https://leetcode.com/problems/surrounded-regions/"},{"id":134,"t":"Graphs","p":"Graph DFS/BFS","n":"01 Matrix","d":"M","u":"https://leetcode.com/problems/01-matrix/"},{"id":135,"t":"Graphs","p":"Graph DFS/BFS","n":"As Far from Land as Possible","d":"M","u":"https://leetcode.com/problems/as-far-from-land-as-possible/"},{"id":136,"t":"Graphs","p":"Topological Sort","n":"Course Schedule","d":"M","u":"https://leetcode.com/problems/course-schedule/"},{"id":137,"t":"Graphs","p":"Topological Sort","n":"Course Schedule II","d":"M","u":"https://leetcode.com/problems/course-schedule-ii/"},{"id":138,"t":"Graphs","p":"Topological Sort","n":"Sequence Reconstruction","d":"M","u":"https://leetcode.com/problems/sequence-reconstruction/"},{"id":139,"t":"Dynamic Programming","p":"1D DP","n":"Climbing Stairs","d":"E","u":"https://leetcode.com/problems/climbing-stairs/"},{"id":140,"t":"Dynamic Programming","p":"1D DP","n":"Min Cost Climbing Stairs","d":"E","u":"https://leetcode.com/problems/min-cost-climbing-stairs/"},{"id":141,"t":"Dynamic Programming","p":"1D DP","n":"House Robber","d":"M","u":"https://leetcode.com/problems/house-robber/"},{"id":142,"t":"Dynamic Programming","p":"1D DP","n":"House Robber II","d":"M","u":"https://leetcode.com/problems/house-robber-ii/"},{"id":143,"t":"Dynamic Programming","p":"1D DP","n":"Decode Ways","d":"M","u":"https://leetcode.com/problems/decode-ways/"},{"id":144,"t":"Dynamic Programming","p":"1D DP","n":"Coin Change","d":"M","u":"https://leetcode.com/problems/coin-change/"},{"id":145,"t":"Dynamic Programming","p":"1D DP","n":"Coin Change II","d":"M","u":"https://leetcode.com/problems/coin-change-ii/"},{"id":146,"t":"Dynamic Programming","p":"1D DP","n":"Maximum Subarray","d":"M","u":"https://leetcode.com/problems/maximum-subarray/"},{"id":147,"t":"Dynamic Programming","p":"1D DP","n":"Word Break","d":"M","u":"https://leetcode.com/problems/word-break/"},{"id":148,"t":"Dynamic Programming","p":"1D DP","n":"Longest Increasing Subsequence","d":"M","u":"https://leetcode.com/problems/longest-increasing-subsequence/"},{"id":149,"t":"Dynamic Programming","p":"1D DP","n":"Number of Longest Increasing Subsequence","d":"M","u":"https://leetcode.com/problems/number-of-longest-increasing-subsequence/"},{"id":150,"t":"Dynamic Programming","p":"1D DP","n":"Partition Equal Subset Sum","d":"M","u":"https://leetcode.com/problems/partition-equal-subset-sum/"},{"id":151,"t":"Dynamic Programming","p":"1D DP","n":"Combination Sum IV","d":"M","u":"https://leetcode.com/problems/combination-sum-iv/"},{"id":152,"t":"Dynamic Programming","p":"1D DP","n":"Perfect Squares","d":"M","u":"https://leetcode.com/problems/perfect-squares/"},{"id":153,"t":"Dynamic Programming","p":"1D DP","n":"Integer Break","d":"M","u":"https://leetcode.com/problems/integer-break/"},{"id":154,"t":"Dynamic Programming","p":"2D DP","n":"Unique Paths","d":"M","u":"https://leetcode.com/problems/unique-paths/"},{"id":155,"t":"Greedy","p":"Greedy","n":"Lemonade Change","d":"E","u":"https://leetcode.com/problems/lemonade-change/"},{"id":156,"t":"Greedy","p":"Greedy","n":"Jump Game","d":"M","u":"https://leetcode.com/problems/jump-game/"},{"id":157,"t":"Greedy","p":"Greedy","n":"Jump Game II","d":"M","u":"https://leetcode.com/problems/jump-game-ii/"},{"id":158,"t":"Greedy","p":"Greedy","n":"Gas Station","d":"M","u":"https://leetcode.com/problems/gas-station/"},{"id":159,"t":"Greedy","p":"Greedy","n":"Task Scheduler","d":"M","u":"https://leetcode.com/problems/task-scheduler/"},{"id":160,"t":"Greedy","p":"Greedy","n":"Partition Labels","d":"M","u":"https://leetcode.com/problems/partition-labels/"},{"id":161,"t":"Greedy","p":"Greedy","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":162,"t":"Intervals","p":"Merge Intervals","n":"Meeting Rooms","d":"E","u":"https://leetcode.com/problems/meeting-rooms/"},{"id":163,"t":"Intervals","p":"Merge Intervals","n":"Merge Intervals","d":"M","u":"https://leetcode.com/problems/merge-intervals/"},{"id":164,"t":"Intervals","p":"Merge Intervals","n":"Insert Interval","d":"M","u":"https://leetcode.com/problems/insert-interval/"},{"id":165,"t":"Intervals","p":"Merge Intervals","n":"Non-overlapping Intervals","d":"M","u":"https://leetcode.com/problems/non-overlapping-intervals/"},{"id":166,"t":"Intervals","p":"Merge Intervals","n":"Meeting Rooms II","d":"M","u":"https://leetcode.com/problems/meeting-rooms-ii/"},{"id":167,"t":"Intervals","p":"Merge Intervals","n":"Minimum Number of Arrows to Burst Balloons","d":"M","u":"https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/"},{"id":168,"t":"Intervals","p":"Merge Intervals","n":"Interval List Intersections","d":"M","u":"https://leetcode.com/problems/interval-list-intersections/"},{"id":169,"t":"Intervals","p":"Merge Intervals","n":"My Calendar I","d":"M","u":"https://leetcode.com/problems/my-calendar-i/"},{"id":170,"t":"Matrix","p":"Matrix","n":"Rotate Image","d":"M","u":"https://leetcode.com/problems/rotate-image/"},{"id":171,"t":"Matrix","p":"Matrix","n":"Spiral Matrix","d":"M","u":"https://leetcode.com/problems/spiral-matrix/"},{"id":172,"t":"Matrix","p":"Matrix","n":"Spiral Matrix II","d":"M","u":"https://leetcode.com/problems/spiral-matrix-ii/"},{"id":173,"t":"Matrix","p":"Matrix","n":"Set Matrix Zeroes","d":"M","u":"https://leetcode.com/problems/set-matrix-zeroes/"},{"id":174,"t":"Matrix","p":"Matrix","n":"Word Search","d":"M","u":"https://leetcode.com/problems/word-search/"},{"id":175,"t":"Matrix","p":"Matrix","n":"Number of Islands","d":"M","u":"https://leetcode.com/problems/number-of-islands/"}];
 
 /* ---------- schedule config ---------- */
-const START = new Date('2026-08-03T00:00:00');
-const READY = new Date('2026-11-16T00:00:00');
-const DSA_END = new Date('2026-12-06T00:00:00'); // problems run ~18 wks
+/* Plan dates are data, not constants: state.plan overrides these so a break can
+   be absorbed from the UI without a code change. recomputePlan() runs once here
+   (before state exists) and again after state loads. */
+const BASE_PLAN={start:'2026-08-31', dsaEnd:'2027-04-14', revSteps:[3,14,45]};
+/* Seeded from BASE_PLAN, NOT by calling recomputePlan() here: `state` is a `let`
+   declared further down, and its temporal dead zone makes any read from up here
+   throw — `typeof` does not shield you from TDZ. recomputePlan() runs at boot,
+   once state exists, and again whenever the plan is edited. */
+let START   = new Date(BASE_PLAN.start+'T00:00:00');
+let READY   = new Date(START.getTime()+105*86400000);        // apply-ready = start + 15wks
+let DSA_END = new Date(BASE_PLAN.dsaEnd+'T00:00:00');
+let REV_STEPS = BASE_PLAN.revSteps;
+function recomputePlan(){
+  const p=(state&&state.plan)||{};
+  START   = new Date((p.start||BASE_PLAN.start)+'T00:00:00');
+  READY   = new Date(START.getTime()+105*86400000);
+  DSA_END = new Date((p.dsaEnd||BASE_PLAN.dsaEnd)+'T00:00:00');
+  REV_STEPS = (Array.isArray(p.revSteps)&&p.revSteps.length) ? p.revSteps : BASE_PLAN.revSteps;
+}
 const wk = (n)=> new Date(START.getTime() + (n-1)*7*86400000); // start of week n
 
 const TRACKS = [
- {id:'dsa-concepts', color:'var(--dsa)', badge:'DSA · PHASE 1', title:'DSA Concept Foundations', w:[1,3],
-  why:'Bounded input phase. One coherent source, timeboxed. Solve 1–2 easies daily on covered topics from day one.',
+ {id:'dsa-concepts', color:'var(--dsa)', badge:'DSA · PHASE 1', title:'DSA Concept Foundations', w:null,
+  why:'No calendar window — each unit is surfaced just-in-time, immediately before the first problem of the pattern block it unlocks. Solve 1–2 easies on the unit the same day.',
   tasks:[
    ['Big-O + recursion tree reasoning (Abdul Bari 1–2 / NeetCode course intro)','~2 hrs'],
    ['Arrays + prefix sums — concept unit','solve 2 easies same day'],
@@ -790,17 +851,18 @@ const TRACKS = [
    ['Resume: lead with Genpact, add Insights AI as featured project','action verb + metric + impact per bullet'],
    ['LinkedIn headline → Senior GenAI Engineer | Multi-Agent Systems','5 min'],
   ]},
- {id:'t1', color:'var(--t1)', badge:'T1 · FILL GAPS', title:'Core ML Math', w:[3,6],
-  why:'Your actual gap tier. StatQuest-crammable — 4 weeks.',
+ {id:'t1', color:'var(--t1)', badge:'T1 · FILL GAPS', title:'Core ML Math', w:[4,6],
+  why:'Your actual gap tier, compressed 4 weeks → 3. The five keeps lead; OLS and PCA are one sitting each — understand, do not derive.',
   tasks:[
-   ['OLS derivation + implement in numpy','X.T@X inverse @X.T@y'],
+   ['Metric selection under class imbalance: ROC vs PR-AUC, NDCG/MRR','45-sec "why not accuracy" answer'],
    ['Ridge vs Lasso geometry — why L1 zeros features','3-sentence interview answer'],
-   ['Random Forest internals: bagging, OOB, decorrelation','StatQuest playlist'],
-   ['GBM + XGBoost vs LightGBM','90-second answer ready'],
-   ['Bayes theorem with concrete example + frequentist vs Bayesian','link to Safety Stock priors'],
+   ['Bias-variance tradeoff — where regularization sits on it','same sitting as ↑ if it fits'],
    ['A/B testing end-to-end: power, Type I/II, pitfalls','design one for a rec feature'],
-   ['PCA via SVD — implement in numpy, compare sklearn','eigenvectors explained plainly'],
-   ['Metrics deep-dive: ROC vs PR-AUC, NDCG/MRR','45-sec "why not accuracy" answer'],
+   ['GBM internals + XGBoost vs LightGBM','90-second answer ready'],
+   ['Random Forest internals: bagging, OOB, decorrelation','StatQuest playlist'],
+   ['Bayes theorem with concrete example + frequentist vs Bayesian','link to Safety Stock priors'],
+   ['OLS closed form','one sitting — understand, don\'t derive'],
+   ['PCA via SVD','one sitting — understand, don\'t derive'],
   ]},
  {id:'t2', color:'var(--t2)', badge:'T2 · MOAT (GAPS ONLY)', title:'GenAI Depth — Gap Cards', w:[7,9],
   why:'Polish cards deferred to week 13 — you already own that material. Only true gaps here.',
@@ -814,8 +876,8 @@ const TRACKS = [
    ['Fine-tune vs RAG vs prompting — opinionated decision tree','clear interview answer'],
    ['RLHF intuition: reward model + PPO','explain, not implement'],
   ]},
- {id:'t3', color:'var(--t3)', badge:'T3 · SENIOR SIGNAL', title:'ML System Design', w:[10,12],
-  why:'What separates senior from mid. You built real systems — frame it that way.',
+ {id:'t3', color:'var(--t3)', badge:'T3 · SENIOR SIGNAL', title:'ML System Design', w:[10,15],
+  why:'What separates senior from mid. Core content W10–13; W14–15 are overflow and mock rework, not new material.',
   tasks:[
    ['Whiteboard answer 1: RAG at 10M docs / 1000 concurrent users','30-min full design'],
    ['Whiteboard answer 2: multi-agent orchestration backend','from KA, then critique it'],
@@ -825,8 +887,8 @@ const TRACKS = [
    ['Serving: batching, model warming, p99 under load','formalise your AP-Trace story'],
    ['2 self-run design mocks, timed, out loud','record yourself'],
   ]},
- {id:'t5', color:'var(--t5)', badge:'T5 + T2 POLISH', title:'SQL + Articulation Pass', w:[13,14],
-  why:'SQL is embarrassing to fail. Polish cards return here as articulation, not learning.',
+ {id:'t5', color:'var(--t5)', badge:'T5 · WEEKLY DRUMBEAT', title:'SQL + Articulation Pass', w:[10,15],
+  why:'No block — ~45 min once a week from W10 alongside T3. Low cognitive load, and unlike DSA it does not decay.',
   tasks:[
    ['Window functions until automatic: ROW_NUMBER, LAG, running totals','Mode tutorial'],
    ['Nth-highest + rolling 7-day average patterns cold','the two classic asks'],
@@ -836,27 +898,31 @@ const TRACKS = [
    ['Docling vs recursive splitter — written case study','genuine differentiator'],
    ['Cost/latency answers: model routing, semantic caching, streaming','concrete numbers from your work'],
   ]},
- {id:'t6', color:'var(--t6)', badge:'T6 · BEHAVIOURAL', title:'Leadership Stories', w:[13,14],
-  why:'At senior level this is half the interview. Material already exists — write it down.',
+ {id:'t6', color:'var(--t6)', badge:'T6 · BEHAVIOURAL', title:'Leadership Stories', w:[12,13],
+  why:'Five STAR stories already exist in T0. This is three new ones plus LP review — rehearsal happens inside the mocks, not here.',
   tasks:[
-   ['8 STAR stories written: influence, ambiguity, risk, mentorship, failure, cross-team','writing clarifies them'],
+   ['STAR: influence without authority','not covered by the 5 project stories'],
+   ['STAR: a failure you owned','the one they actually probe'],
+   ['STAR: mentorship','scales you beyond your own output'],
    ['Amazon LPs — review all 16','many companies use LP-style silently'],
-   ['Record yourself: 3 stories, under 2 minutes each','natural, not rehearsed'],
    ['Explain LangGraph Supervisor in 60 seconds to a non-tech listener','practice on someone real'],
   ]},
- {id:'mocks', color:'var(--accent)', badge:'W15–16 · LAUNCH', title:'Mocks & Applications', w:[15,16],
-  why:'Talking-while-coding is a separate skill. Then apply — DSA keeps running underneath.',
+ {id:'mocks', color:'var(--accent)', badge:'W12–15 · LAUNCH', title:'Mocks & Applications', w:[12,15],
+  why:'One mock per week, not four in a row — each one\'s gaps need the following week to absorb. Applications go live Dec 14.',
   tasks:[
-   ['4 mock interviews: 2 DSA, 1 system design, 1 behavioural','Pramp / interviewing.io / peers'],
+   ['Mock 1 — DSA','W12 · Nov 16 · rework lands in W13'],
+   ['Mock 2 — DSA','W13 · Nov 23 · rework lands in W14'],
+   ['Mock 3 — system design','W14 · Nov 30 · rework lands in W15'],
+   ['Mock 4 — behavioural','W15 · Dec 7 · rework lands in W16'],
    ['Target list: 20 companies (unicorns → big tech AI teams)','tiered by preference'],
-   ['Applications live: 3–5/week, tailored','start with tier-2 targets to calibrate'],
+   ['Applications live: 3–5/week, tailored','from Dec 14 — start tier-2 to calibrate'],
   ]},
 ];
 
 /* ---------- state ---------- */
 const KEY='praveen-prep-v1';
 const UIKEY='praveen-prep-ui-v1';
-let state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{}};
+let state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{},rlog:{},plan:{}};
 try{const s=localStorage.getItem(KEY); if(s) state=Object.assign(state,JSON.parse(s));}catch(e){}
 let ui={theme:'dark',view:'tracks',openTracks:['dsa-concepts'],openTopics:null};
 try{const s=localStorage.getItem(UIKEY); if(s) ui=Object.assign(ui,JSON.parse(s));}catch(e){}
@@ -877,7 +943,6 @@ const daysUntil=s=>Math.round((dparse(s)-dparse(today()))/86400000);
 
 /* spaced review: intervals chain from the last completed rep, so being
    late stretches the ladder instead of collapsing it */
-const REV_STEPS=[3,14,45];
 const revOf=id=>(state.rev||{})[id]||null;
 function revDue(id){
   const r=revOf(id);
@@ -900,6 +965,8 @@ function markReview(id,cold){
     r.f=(r.f||0)+1;
     r.d=addDays(today(),REV_STEPS[0]);            // struggled: back in 3 days, same rung
   }
+  state.rlog=state.rlog||{};
+  state.rlog[today()]=(state.rlog[today()]||0)+1;
   save();
   renderDSA(); updateStats();
 }
@@ -963,8 +1030,8 @@ function buildRibbon(){
   axis+='</div>';
 
   const bars=[['DSA problems','var(--dsa)',1,16]]
-    .concat([['DSA concepts','color-mix(in srgb,var(--dsa) 45%,transparent)',1,3]])
-    .concat(TRACKS.filter(t=>t.id!=='dsa-concepts').map(t=>[t.title,t.color,t.w[0],t.w[1]]));
+    .concat([['DSA concepts (just-in-time)','color-mix(in srgb,var(--dsa) 45%,transparent)',1,16]])
+    .concat(TRACKS.filter(t=>t.w).map(t=>[t.title,t.color,t.w[0],t.w[1]]));
 
   let rows='';
   for(const [name,color,a,b] of bars){
@@ -994,11 +1061,18 @@ function buildRibbon(){
 /* ---------- focus card ---------- */
 function renderFocus(){
   const cw=curWeek();
-  const active=TRACKS.filter(t=>cw===0 ? t.w[0]===1 : (cw>=t.w[0]&&cw<=t.w[1]));
-  const pool=(active.length?active:TRACKS).filter(t=>trackDone(t)<t.tasks.length);
+  const active=TRACKS.filter(t=>!t.w ? false : (cw===0 ? t.w[0]===1 : (cw>=t.w[0]&&cw<=t.w[1])));
+  /* Between windows, surface the track that opens NEXT rather than falling back to
+     every track at once — that is what used to drag T2/T3 into view early. */
+  const upcoming=TRACKS.filter(t=>t.w&&t.w[0]>cw).sort((a,b)=>a.w[0]-b.w[0]);
+  const nextTrack=upcoming.length?[upcoming[0]]:[];
+  const pool=(active.length?active:(nextTrack.length?nextTrack:TRACKS)).filter(t=>trackDone(t)<t.tasks.length);
 
-  $('focus-week').textContent = cw===0 ? '· plan starts Aug 3, 2026' : '· week '+Math.min(cw,16)+' of 16';
-  $('focus-title').textContent = cw===0 ? 'Get a head start' : (active.length ? active.map(t=>t.title).join(' + ') : 'Wrap up what is open');
+  $('focus-week').textContent = cw===0 ? '· plan starts '+fmtDate(START,{day:'numeric',month:'short',year:'numeric'}) : '· week '+Math.min(cw,16)+' of 16';
+  $('focus-title').textContent = cw===0 ? 'Get a head start'
+    : active.length ? active.map(t=>t.title).join(' + ')
+    : nextTrack.length ? nextTrack[0].title+' — opens '+fmtDate(wk(nextTrack[0].w[0]),{day:'numeric',month:'short'})
+    : 'Wrap up what is open';
 
   const doneToday=state.log[today()]||0;
   $('focus-sub').innerHTML = 'DSA target ~2 problems/day, 6 days/week · <b style="color:'+(doneToday>=2?'var(--ok)':'var(--mid)')+'">'+doneToday+' logged today</b>';
@@ -1011,8 +1085,19 @@ function renderFocus(){
     });
   }
   const L=$('focus-list');
-  if(!items.length){ L.innerHTML='<div class="focus-empty">Nothing open in the current window — good place to pull work forward.</div>'; return; }
-  L.innerHTML=items.slice(0,5).map(({id,t,task})=>
+  const nu=nextUp();
+  let head='';
+  if(nu&&nu.kind==='unit'){
+    head='<div class="task"><input class="chk" type="checkbox" id="f-'+nu.id+'" data-task="'+nu.id+'">'
+      +'<label for="f-'+nu.id+'"><span class="txt">'+esc(nu.task[0])+'</span>'
+      +'<span class="hint" style="color:var(--dsa)">DSA · unlocks '+esc(nu.pat)+' — do this before its problems</span></label></div>';
+  }else if(nu){
+    head='<div class="task"><span class="chk" style="visibility:hidden"></span>'
+      +'<label><span class="txt">Next problem: <a href="'+nu.p.u+'" target="_blank" rel="noopener">'+esc(nu.p.n)+'</a></span>'
+      +'<span class="hint" style="color:var(--dsa)">DSA · '+esc(nu.pat)+' · '+patSolved(nu.pat)+' of '+patTarget(nu.pat)+' in this block</span></label></div>';
+  }
+  if(!items.length&&!head){ L.innerHTML='<div class="focus-empty">Nothing open in the current window — good place to pull work forward.</div>'; return; }
+  L.innerHTML=head+items.slice(0,head?4:5).map(({id,t,task})=>
     '<div class="task"><input class="chk" type="checkbox" id="f-'+id+'" data-task="'+id+'">'
     +'<label for="f-'+id+'"><span class="txt">'+esc(task[0])+'</span>'
     +'<span class="hint" style="color:'+t.color+'">'+esc(t.badge)+'</span></label></div>'
@@ -1044,7 +1129,7 @@ function buildTracks(){
       +'<button class="track-head" data-track="'+t.id+'" aria-expanded="'+open+'">'
         +'<span class="track-badge" style="background:'+soft+';color:'+t.color+';box-shadow:inset 0 0 0 1px '+line+'">'+esc(t.badge)+'</span>'
         +'<span class="track-title">'+hl(t.title)+'</span>'
-        +'<span class="track-window">W'+t.w[0]+'–W'+t.w[1]+' · '+fmtDate(wk(t.w[0]),{day:'numeric',month:'short'})+'</span>'
+        +'<span class="track-window">'+(t.w?'W'+t.w[0]+'–W'+t.w[1]+' · '+fmtDate(wk(t.w[0]),{day:'numeric',month:'short'}):'just-in-time · no window')+'</span>'
         +'<span class="mini-progress"><span class="mini-bar"><span class="mini-fill" id="fill-'+t.id+'" style="background:'+t.color+'"></span><span class="mini-exp" id="exp-'+t.id+'"></span></span><span class="mini-pct" id="pct-'+t.id+'"></span></span>'
         +'<span class="chev">▼</span>'
       +'</button>'
@@ -1125,6 +1210,53 @@ const TRIGGERS={
 };
 
 PROBLEMS.forEach(p=>{ p.pg = PAT_MAP[p.p] || p.p; });
+
+/* Concept units gate pattern blocks: index into TRACKS[dsa-concepts].tasks ->
+   the patterns that unit unlocks. Patterns absent here are ungated. */
+const GATES={
+  3:['Two Pointers','Sliding Window','Fast & Slow Pointers'],
+  4:['Stack / Queue','Monotonic Stack'],
+  5:['Binary Search'],
+  6:['Linked List Pointer Surgery'],
+  7:['Tree DFS (bubble-up)','Tree BFS (level order)'],
+  8:['Heap / Top-K'],
+  9:['Graph DFS / BFS','Topological Sort','Dynamic Programming'],
+};
+const BLOCK_TARGET=3;
+const gateFor=pat=>{ for(const k in GATES) if(GATES[k].includes(pat)) return +k; return null; };
+const gateDone=pat=>{ const g=gateFor(pat); return g===null || !!state.tasks['dsa-concepts-'+g]; };
+const patSolved=pat=>PROBLEMS.filter(p=>p.pg===pat&&state.probs[p.id]).length;
+const patTotal=pat=>PROBLEMS.filter(p=>p.pg===pat).length;
+const patTarget=pat=>Math.min(BLOCK_TARGET,patTotal(pat));
+
+/* Breadth-first at BLOCK level, never per problem: finish a block to ~3 before
+   opening the next, so Phase A still gets consecutive reps. */
+function coverageOrder(){
+  return PATTERNS.slice().sort((a,b)=>{
+    const sa=patSolved(a), sb=patSolved(b);
+    const ia=sa>0&&sa<patTarget(a), ib=sb>0&&sb<patTarget(b);
+    if(ia!==ib) return ia?-1:1;                 // in-flight blocks first
+    const da=sa>=patTarget(a), db=sb>=patTarget(b);
+    if(da!==db) return da?1:-1;                 // finished blocks last
+    if(sa!==sb) return sa-sb;                   // then least covered
+    return PATTERNS.indexOf(a)-PATTERNS.indexOf(b);
+  });
+}
+/* The next thing to actually do: a concept unit if the next block is gated shut,
+   otherwise the next unsolved problem in that block. */
+function nextUp(){
+  for(const pat of coverageOrder()){
+    if(patSolved(pat)>=patTarget(pat)) continue;
+    const g=gateFor(pat);
+    if(g!==null && !state.tasks['dsa-concepts-'+g]){
+      const tr=TRACKS.find(t=>t.id==='dsa-concepts');
+      return {kind:'unit', id:'dsa-concepts-'+g, task:tr.tasks[g], pat, track:tr};
+    }
+    const p=PROBLEMS.find(x=>x.pg===pat&&!state.probs[x.id]);
+    if(p) return {kind:'problem', p, pat};
+  }
+  return null;
+}
 
 function groupMode(){ return ($('f-group')||{value:'pattern'}).value; }
 function buildDSAFilters(){
@@ -1207,6 +1339,16 @@ function renderDue(){
     html+='<div class="due-card"><span class="kicker">Due for review · '+due.length+'</span>'
       +'<div class="due-lede">Re-solve from a blank file before starting anything new. '
       +'<b>Solved cold</b> moves it down the ladder; <b>Struggled</b> brings it back in 3 days.</div>';
+    const worst=due.length?-revDue(due[0].id):0;
+    if(due.length>=6||worst>=14){
+      html+='<div class="warn" style="margin:0 0 12px">'
+        +'<b>'+due.length+' overdue, worst by '+worst+' days.</b> After a gap this long the spacing is '
+        +'meaningless — these are cold re-solves now. Rebasing resets each to rung 1 and spreads them '
+        +'2/day, hardest first (your flagged struggles, then misidentified patterns, then the rest). '
+        +'Solve history and struggle counts are kept.'
+        +'<div class="sheet-row" style="margin-top:10px"><button class="small-btn primary" id="btn-rebase">'
+        +'Rebase '+due.length+' overdue reviews</button></div></div>';
+    }
     for(const p of due){
       const n=revDue(p.id), r=revOf(p.id);
       html+='<div class="due-row">'
@@ -1267,8 +1409,8 @@ function renderDSA(){
     renderChips(); renderDue(); return;
   }
 
-  const keys = gm==='pattern' ? PATTERNS : TOPICS;
-  const field = gm==='pattern' ? 'pg' : 't';
+  const keys = gm==='coverage' ? coverageOrder() : (gm==='pattern' ? PATTERNS : TOPICS);
+  const field = gm==='topic' ? 't' : 'pg';
   for(const k of keys){
     const ps=PROBLEMS.filter(p=>p[field]===k && pass(p));
     if(!ps.length) continue;
@@ -1280,7 +1422,8 @@ function renderDSA(){
       +'<span class="topic-meter"><i style="width:'+Math.round(done/all.length*100)+'%"></i></span>'
       +'<span class="topic-count">'+done+' / '+all.length+'</span>'
       +'<span class="chev">▼</span></button><div class="topic-body">'
-      +(gm==='pattern'&&TRIGGERS[k]?'<div style="font-size:11px;color:var(--dim);padding:8px 14px 4px">Fires when: '+esc(TRIGGERS[k])+'</div>':'')
+      +((gm==='pattern'||gm==='coverage')&&TRIGGERS[k]?'<div style="font-size:11px;color:var(--dim);padding:8px 14px 4px">Fires when: '+esc(TRIGGERS[k])+'</div>':'')
+      +(gm==='coverage'&&!gateDone(k)?'<div style="font-size:11px;color:var(--accent);padding:4px 14px 6px">Gated — do the concept unit first: <b>'+esc((TRACKS.find(t=>t.id==='dsa-concepts').tasks[gateFor(k)]||[''])[0])+'</b></div>':'')
       +ps.map(p=>probRow(p,false)).join('')
       +'</div></div>';
   }
@@ -1295,7 +1438,9 @@ function renderChips(){
      '<span class="chip g"><b>'+solved+'</b> of '+PROBLEMS.length+' solved</span>'
     +'<span class="chip"><b>'+e+'</b> / '+totE+' Easy</span>'
     +'<span class="chip"><b>'+m+'</b> / '+(PROBLEMS.length-totE)+' Medium</span>'
-    +'<span class="chip a"><b>'+(state.log[today()]||0)+'</b> today · target 2</span>';
+    +'<span class="chip a"><b>'+(state.log[today()]||0)+'</b> today · target 2</span>'
+    +'<span class="chip"><b>'+PATTERNS.filter(k=>PROBLEMS.some(p=>p.pg===k&&state.probs[p.id])).length
+    +'</b> / '+PATTERNS.length+' patterns covered</span>';
 }
 function toggleProb(id){
   const wasFiltered=$('f-status').value!=='all';
@@ -1318,6 +1463,55 @@ function toggleProb(id){
   updateStats();
 }
 
+/* ---------- throughput + projection ---------- */
+/* Readiness deliberately excludes dsa-concepts: DSA has its own runway. */
+const READINESS=['t0','t1','t2','t3','t5','t6','mocks'];
+
+const weekKey=ds=>{ const d=dparse(ds); return dstr(new Date(d.getTime()-((d.getDay()+6)%7)*86400000)); };
+
+/* Budget is time, not session count — a cold solve costs ~3x a re-solve, so
+   counting them as equal units understates throughput badly. */
+const COST={cold:50, review:18};   // minutes, per the 25-min attempt + editorial + blank-file loop
+
+/* Minutes per ACTIVE week. Weeks with zero sessions never enter the denominator,
+   so a 28-day break does not drag the rate toward zero. */
+function observedRate(){
+  const nw={}, rw={};
+  for(const k in (state.log||{}))  nw[weekKey(k)]=(nw[weekKey(k)]||0)+state.log[k];
+  for(const k in (state.rlog||{})) rw[weekKey(k)]=(rw[weekKey(k)]||0)+state.rlog[k];
+  const weeks=[...new Set([...Object.keys(nw),...Object.keys(rw)])].sort().slice(-6);
+  if(weeks.length<2) return null;                      // not enough signal to project
+  const mins=weeks.reduce((a,k)=>a+(nw[k]||0)*COST.cold+(rw[k]||0)*COST.review,0)/weeks.length;
+  const np=weeks.reduce((a,k)=>a+(nw[k]||0),0)/weeks.length;
+  return {minutes:mins, newPerWeek:np, weeks:weeks.length};
+}
+
+/* Remaining = every unsolved problem's full loop, plus reviews still owed on
+   problems already solved — priced in minutes. */
+function remainingMinutes(){
+  const reps=REV_STEPS.length;
+  let m=0;
+  for(const p of PROBLEMS){
+    if(!state.probs[p.id]){ m+=COST.cold+reps*COST.review; continue; }
+    const r=revOf(p.id);
+    if(r && r.d) m+=Math.max(0,reps-(r.n||0))*COST.review;
+  }
+  return m;
+}
+function projectionText(){
+  const r=observedRate(), target=fmtDate(DSA_END,{day:'numeric',month:'short',year:'numeric'});
+  if(!r) return 'Projection needs 2 active weeks of data — target '+target+'.';
+  const left=remainingMinutes();
+  if(!left) return 'All '+PROBLEMS.length+' solved and every ladder retired. Target was '+target+'.';
+  if(r.minutes<=0) return 'No sessions logged recently — target '+target+'.';
+  const weeks=left/r.minutes;
+  const when=new Date(Date.now()+weeks*7*86400000);
+  const late=when>DSA_END;
+  return 'At <b>'+(r.minutes/60).toFixed(1)+' hrs/wk</b> observed ('+r.newPerWeek.toFixed(1)+' new/wk) · '
+    +Math.round(left/60)+' hrs left → all '+PROBLEMS.length+' by <b style="color:'+(late?'var(--behind)':'var(--ok)')+'">'
+    +fmtDate(when,{day:'numeric',month:'short',year:'numeric'})+'</b> · target '+target;
+}
+
 /* ---------- stats ---------- */
 function updateStats(){
   const now=new Date(), cw=curWeek();
@@ -1325,30 +1519,42 @@ function updateStats(){
   $('s-date').textContent = fmtDate(now,{weekday:'short',day:'numeric',month:'short'});
   $('s-days').textContent = Math.max(0,Math.ceil((READY-now)/86400000));
 
+  $('sub-start').textContent=fmtDate(START,{day:'numeric',month:'short',year:'numeric'});
+  $('sub-ready').textContent=fmtDate(READY,{day:'numeric',month:'short',year:'numeric'});
+  $('s-days-note').textContent=fmtDate(READY,{day:'numeric',month:'short',year:'numeric'});
+
+  /* readiness = T0-T6 + mocks. DSA is deliberately excluded: conflating the two
+     is what produced the misleading "behind" figure. */
   let expSum=0, actSum=0, wSum=0, taskDone=0, taskTotal=0;
   for(const t of TRACKS){
-    const done=trackDone(t), act=done/t.tasks.length, exp=expectedFrac(t.w[0],t.w[1]);
+    const done=trackDone(t), act=done/t.tasks.length;
+    const exp=t.w?expectedFrac(t.w[0],t.w[1]):act;   // no window -> no calendar expectation
     taskDone+=done; taskTotal+=t.tasks.length;
     const f=$('fill-'+t.id); if(f) f.style.width=(act*100)+'%';
     const x=$('exp-'+t.id); if(x) x.style.left=(exp*100)+'%';
     const p=$('pct-'+t.id); if(p) p.textContent=Math.round(act*100)+'% / '+Math.round(exp*100)+'%';
-    expSum+=exp; actSum+=act; wSum+=1;
+    if(READINESS.includes(t.id)){ expSum+=exp; actSum+=act; wSum+=1; }
   }
-  const dExp=clamp((now-START)/(DSA_END-START),0,1);
-  const dAct=Object.keys(state.probs).length/PROBLEMS.length;
-  expSum+=dExp*3; actSum+=dAct*3; wSum+=3;
-
   const exp=Math.round(expSum/wSum*100), act=Math.round(actSum/wSum*100), d=act-exp;
   $('s-exp').innerHTML=act+'% <small>vs '+exp+'%</small>';
   const de=$('s-delta');
   de.textContent = d>=0 ? '+'+d+' pts — on track' : d+' pts — behind';
   de.className='note '+(d>=0?'delta-ok':'delta-behind');
-
   $('ov-fill').style.width=act+'%';
   $('ov-mark').style.left=exp+'%';
   $('ov-meta').textContent=act+'% done · '+exp+'% expected by today';
 
-  $('s-dsa').textContent=Object.keys(state.probs).length;
+  /* DSA bar: fill = actual, mark = TARGET pace from dsaEnd (the line that can be
+     missed), projection = separate readout from observed throughput. */
+  const solved=Object.keys(state.probs).length;
+  const dAct=solved/PROBLEMS.length;
+  const dExp=clamp((now-START)/(DSA_END-START),0,1);
+  $('dsa-fill').style.width=(dAct*100)+'%';
+  $('dsa-mark').style.left=(dExp*100)+'%';
+  $('dsa-meta').textContent=solved+' / '+PROBLEMS.length+' · target pace '+Math.round(dExp*100)+'%';
+  $('dsa-proj').innerHTML=projectionText();
+
+  $('s-dsa').textContent=solved;
   $('s-dsa-note').textContent='of '+PROBLEMS.length+' problems';
   $('tracks-chip').innerHTML='<b>'+taskDone+'</b> of '+taskTotal+' tasks done';
 
@@ -1417,6 +1623,14 @@ document.addEventListener('click',e=>{
   if(ok){ markReview(+ok.dataset.revOk,true); return; }
   const bad=e.target.closest('[data-rev-bad]');
   if(bad){ markReview(+bad.dataset.revBad,false); return; }
+  if(e.target.closest('#btn-rebase')){
+    const n=dueList().length;
+    const per=2, days=Math.ceil(n/per);
+    if(!confirm('Rebase '+n+' overdue reviews?\n\nEach resets to rung 1 and is spread '+per+'/day over '+days+' days, hardest first.\nSolve dates and struggle counts are kept. Nothing else changes.')) return;
+    const done=rebaseOverdue(per,days);
+    toast(done+' reviews rebased over '+days+' days');
+    return;
+  }
   if(e.target.closest('#btn-backfill')){
     const n=unscheduledSolved();
     if(!confirm('Put '+n+' already-solved problem'+(n>1?'s':'')+' on the review ladder, dated today?\n\nFirst review lands in 3 days. Nothing else changes.')) return;
@@ -1529,7 +1743,7 @@ $('import-file').addEventListener('change',ev=>{
   r.onload=()=>{
     try{
       const parsed=JSON.parse(r.result);
-      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{},guess:parsed.guess||{},notes:parsed.notes||{},rev:parsed.rev||{}};
+      state={tasks:parsed.tasks||{},probs:parsed.probs||{},log:parsed.log||{},guess:parsed.guess||{},notes:parsed.notes||{},rev:parsed.rev||{},rlog:parsed.rlog||{},plan:parsed.plan||{}};
       save(); buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Progress imported');
     }catch(e){ toast('That file could not be read as progress data.'); }
   };
@@ -1537,7 +1751,7 @@ $('import-file').addEventListener('change',ev=>{
 });
 $('btn-reset').addEventListener('click',()=>{
   if(confirm('Clear all checked tasks, problems, and streak history? Export first if unsure.')){
-    state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{}}; save();
+    state={tasks:{},probs:{},log:{},guess:{},notes:{},rev:{},rlog:{},plan:state.plan||{}}; save();
     buildTracks(); renderDSA(); renderFocus(); updateStats(); toast('Everything cleared');
   }
 });
@@ -1550,7 +1764,7 @@ let sync={token:'',gistId:''};
 try{const s=localStorage.getItem(SYNCKEY); if(s) sync=Object.assign(sync,JSON.parse(s));}catch(e){}
 const saveSync=()=>{try{localStorage.setItem(SYNCKEY,JSON.stringify(sync));}catch(e){}};
 const syncOn=()=>!!(sync.token&&sync.gistId);
-const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log,guess:state.guess||{},notes:state.notes||{},rev:state.rev||{}});
+const payload=()=>({v:1,updatedAt:state.updatedAt||0,tasks:state.tasks,probs:state.probs,log:state.log,guess:state.guess||{},notes:state.notes||{},rev:state.rev||{},rlog:state.rlog||{},plan:state.plan||{}});
 
 function setSync(kind,msg){
   const s=$('sync-state'), b=$('sync-btn');
@@ -1605,6 +1819,10 @@ async function syncPull(union){
       state.guess=Object.assign({},remote.guess||{},state.guess||{});
       state.notes=Object.assign({},remote.notes||{},state.notes||{});
       state.rev=Object.assign({},remote.rev||{},state.rev||{});
+      state.plan=Object.assign({},remote.plan||{},state.plan||{});
+      const rl=Object.assign({},remote.rlog||{});
+      for(const k in (state.rlog||{})) rl[k]=Math.max(rl[k]||0,state.rlog[k]);
+      state.rlog=rl;
       const log=Object.assign({},remote.log||{});
       for(const k in state.log) log[k]=Math.max(log[k]||0,state.log[k]);
       state.log=log;
@@ -1612,7 +1830,8 @@ async function syncPull(union){
     }else if((remote.updatedAt||0)>(state.updatedAt||0)){
       const take=(k)=>remote[k]!==undefined?remote[k]:(state[k]||{});
       state={tasks:take('tasks'),probs:take('probs'),log:take('log'),guess:take('guess'),
-             notes:take('notes'),rev:take('rev'),updatedAt:remote.updatedAt||0};
+             notes:take('notes'),rev:take('rev'),rlog:take('rlog'),plan:take('plan'),
+             updatedAt:remote.updatedAt||0};
       try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
       pulling=false;
       setSync('ok','Up to date — pulled newer progress from your other device');
@@ -1673,10 +1892,80 @@ $('sync-off').addEventListener('click',()=>{
   setSync('','Not syncing — progress stays on this device only.');
   toast('Sync disconnected');
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('sync-overlay').classList.add('hidden'); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ $('sync-overlay').classList.add('hidden'); $('plan-overlay').classList.add('hidden'); } });
 window.addEventListener('online',()=>{ if(syncOn()) syncPull(false).catch(()=>{}); });
 
+/* ---------- plan dates sheet ---------- */
+let draftSteps=null;
+function planOpen(){
+  const p=state.plan||{};
+  $('plan-start').value=p.start||BASE_PLAN.start;
+  $('plan-dsaend').value=p.dsaEnd||BASE_PLAN.dsaEnd;
+  draftSteps=(Array.isArray(p.revSteps)&&p.revSteps.length)?p.revSteps.slice():BASE_PLAN.revSteps.slice();
+  planPreview();
+  $('plan-overlay').classList.remove('hidden');
+}
+function planPreview(){
+  const v=$('plan-start').value;
+  $('plan-steps').textContent='currently '+draftSteps.join('d · ')+'d';
+  if(!v){ $('plan-preview').textContent='Pick a start date.'; return; }
+  const st=dparse(v), rd=new Date(st.getTime()+105*86400000), now=new Date();
+  const w=now<st?0:Math.floor((now-st)/(7*86400000))+1;
+  $('plan-preview').innerHTML='Today becomes <b>'+(w===0?'pre-start':'Week '+w)+'</b> · apply-ready <b>'
+    +fmtDate(rd,{day:'numeric',month:'short',year:'numeric'})+'</b>';
+}
+$('btn-plan').addEventListener('click',planOpen);
+$('plan-close').addEventListener('click',()=>$('plan-overlay').classList.add('hidden'));
+$('plan-overlay').addEventListener('click',e=>{ if(e.target===$('plan-overlay')) $('plan-overlay').classList.add('hidden'); });
+$('plan-start').addEventListener('change',planPreview);
+document.addEventListener('click',e=>{
+  const sh=e.target.closest('[data-shift]');
+  if(sh){ const v=$('plan-start').value||BASE_PLAN.start;
+    $('plan-start').value=addDays(v,+sh.dataset.shift); planPreview(); return; }
+  const st=e.target.closest('[data-steps]');
+  if(st){ draftSteps=st.dataset.steps.split(',').map(Number); planPreview(); }
+});
+$('plan-apply').addEventListener('click',()=>{
+  const v=$('plan-start').value, de=$('plan-dsaend').value;
+  if(!v||!de){ toast('Both dates are required.'); return; }
+  state.plan=Object.assign({},state.plan,{start:v,dsaEnd:de,revSteps:draftSteps});
+  save(); recomputePlan();
+  buildRibbon(); buildTracks(); renderDSA(); renderFocus(); updateStats();
+  $('plan-overlay').classList.add('hidden');
+  toast('Plan shifted — today is now week '+curWeek());
+});
+
+/* ---------- rebase overdue reviews ---------- */
+/* After a long gap the 3/14/45 spacing is meaningless: these are cold re-solves.
+   Reset the rung, keep the failure history, and spread them into a queue. */
+function rebaseOverdue(perDay,days){
+  const items=PROBLEMS.filter(p=>isDue(p.id));
+  if(!items.length) return 0;
+  const noteOfP=id=>noteOf('p:'+id).toLowerCase();
+  const rank=p=>{
+    const r=revOf(p.id)||{};
+    if(r.f>=1) return 0;                                   // you already flagged this one
+    if((state.guess||{})[p.id]==='miss') return 1;         // pattern misidentified
+    if(/struggl/.test(noteOfP(p.id))) return 2;            // struggle recorded in the note
+    return 3;
+  };
+  items.sort((a,b)=>{
+    const d=rank(a)-rank(b); if(d) return d;
+    const ra=revOf(a.id)||{}, rb=revOf(b.id)||{};
+    return String(ra.s||'').localeCompare(String(rb.s||''));   // oldest solve first
+  });
+  const cap=Math.max(1,perDay), span=Math.max(1,days);
+  items.forEach((p,i)=>{
+    const r=state.rev[p.id];
+    r.n=0;                                                  // cold again — rung reset, f and s kept
+    r.d=addDays(today(),Math.min(span-1,Math.floor(i/cap)));
+  });
+  save(); renderDSA(); updateStats();
+  return items.length;
+}
+
 /* ---------- boot ---------- */
+recomputePlan();
 if(!Array.isArray(ui.openTopics)) ui.openTopics=[PATTERNS[0]];
 applyTheme();
 buildRibbon();
