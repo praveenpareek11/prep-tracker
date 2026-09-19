@@ -1094,7 +1094,7 @@ function renderFocus(){
   }else if(nu){
     head='<div class="task"><span class="chk" style="visibility:hidden"></span>'
       +'<label><span class="txt">Next problem: <a href="'+nu.p.u+'" target="_blank" rel="noopener">'+esc(nu.p.n)+'</a></span>'
-      +'<span class="hint" style="color:var(--dsa)">DSA · '+esc(nu.pat)+' · '+patSolved(nu.pat)+' of '+patTarget(nu.pat)+' in this block</span></label></div>';
+      +'<span class="hint" style="color:var(--dsa)">DSA · '+esc(nu.pat)+' · problem '+(patSolved(nu.pat)+1)+' of '+patTarget(nu.pat)+' in this block</span></label></div>';
   }
   if(!items.length&&!head){ L.innerHTML='<div class="focus-empty">Nothing open in the current window — good place to pull work forward.</div>'; return; }
   L.innerHTML=head+items.slice(0,head?4:5).map(({id,t,task})=>
@@ -1232,13 +1232,18 @@ const patTarget=pat=>Math.min(BLOCK_TARGET,patTotal(pat));
 /* Breadth-first at BLOCK level, never per problem: finish a block to ~3 before
    opening the next, so Phase A still gets consecutive reps. */
 function coverageOrder(){
+  const bucket=p=>{ const s=patSolved(p);
+    if(s>=patTarget(p)) return 2;               // finished — last
+    return s>0 ? 0 : 1;                         // in-flight first, then untouched
+  };
   return PATTERNS.slice().sort((a,b)=>{
-    const sa=patSolved(a), sb=patSolved(b);
-    const ia=sa>0&&sa<patTarget(a), ib=sb>0&&sb<patTarget(b);
-    if(ia!==ib) return ia?-1:1;                 // in-flight blocks first
-    const da=sa>=patTarget(a), db=sb>=patTarget(b);
-    if(da!==db) return da?1:-1;                 // finished blocks last
-    if(sa!==sb) return sa-sb;                   // then least covered
+    const ba=bucket(a), bb=bucket(b);
+    if(ba!==bb) return ba-bb;
+    /* Within in-flight, MOST progressed first. Sorting least-covered here hops to
+       whichever block is furthest behind after every solve — per-problem rotation
+       in a block-level costume. Most-progressed is stable: a block stays at the
+       front until it closes and leaves the bucket. */
+    if(ba===0){ const d=patSolved(b)-patSolved(a); if(d) return d; }
     return PATTERNS.indexOf(a)-PATTERNS.indexOf(b);
   });
 }
